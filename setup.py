@@ -11,7 +11,8 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'graphene-django>=2.13',
+    'graphene-django>=2.13,<3.0.0',
+    'django>=3.2.9,<4.0.0',
 ]
 
 test_requirements = []
