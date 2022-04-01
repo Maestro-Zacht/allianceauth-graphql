@@ -13,6 +13,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'graphene-django>=2.13,<3.0.0',
     'django>=3.2.9,<4.0.0',
+    'django-cors-headers>=3.7,<4.0.0',
 ]
 
 test_requirements = []

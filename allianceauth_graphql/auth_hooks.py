@@ -6,4 +6,4 @@ from . import urls
 
 @hooks.register('url_hook')
 def register_urls():
-    return UrlHook(urls, 'allianceauthgraphql', '')
+    return UrlHook(urls, 'allianceauth_graphql', r'^graphql/')

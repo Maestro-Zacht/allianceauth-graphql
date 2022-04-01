@@ -9,16 +9,19 @@ def create_schema() -> graphene.Schema:
     for app in settings.INSTALLED_APPS:
         if app.startswith('allianceauth.'):
             import_module = app.replace('allianceauth.', 'allianceauth_graphql.')
-            if importlib.util.find_spec(import_module) is not None:
+            try:
                 module = importlib.import_module(import_module)
-                queries.append(module.schema.Query)
-                mutations.append(module.schema.Mutation)
+            except ModuleNotFoundError:
+                pass
+            else:
+                queries.append(module.Query)
+                mutations.append(module.Mutation)
 
-    queries.append(graphene.ObjectType)
-    mutations.append(graphene.ObjectType)
+    class Query(*queries, graphene.ObjectType):
+        pass
 
-    Query = type('Query', queries, {})
-    Mutation = type('Mutation', mutations, {})
+    class Mutation(*mutations, graphene.ObjectType):
+        pass
 
     return graphene.Schema(query=Query, mutation=Mutation)
 
