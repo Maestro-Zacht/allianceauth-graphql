@@ -13,6 +13,8 @@ with open('HISTORY.md') as history_file:
 requirements = [
     'allianceauth>=2.11.2,<3.0.0',
     'graphene-django>=2.13,<3.0.0',
+    'django-graphql-jwt==0.3.0',
+    'django-graphql-auth>=0.3.16,<0.4.0',
     # 'django-cors-headers>=3.7,<4.0.0',
 ]
 

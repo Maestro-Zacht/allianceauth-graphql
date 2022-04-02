@@ -27,16 +27,35 @@ Install plugin
 --------------
 
 1. `pip install allianceauth-graphql`.
-2. Add `'allianceauth_graphql'` (note the underscore) to the bottom of your `INSTALLED_APPS` in the local.py settings file.
-3. Add the following setting at the bottom of your urls.py file:
+2. Add the following apps to the bottom of your `INSTALLED_APPS` in the local.py settings file:
+    ``` python
+    'allianceauth_graphql',
+    'graphene-django',
+    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
+    "graphql_auth",
+    ```
+3. Add the following settings at the bottom of your local.py file:
     ``` python
     GRAPHENE = {
         'SCHEMA': 'allianceauth_graphql.schema.schema',
+        'MIDDLEWARE': [
+            'graphql_jwt.middleware.JSONWebTokenMiddleware',
+        ],
+    }
+
+    AUTHENTICATION_BACKENDS += [
+        "graphql_auth.backends.GraphQLAuthBackend",
+    ]
+
+    GRAPHQL_JWT = {
+        "JWT_VERIFY_EXPIRATION": True,
+        "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
     }
     ```
-4. Edit your projects url.py file:
+4. Run migrations.
+5. Edit your projects url.py file:
 
-   > It should look something like this
+   > It should looks something like this
 
     ``` python
     from django.conf.urls import include, url
@@ -69,7 +88,7 @@ Install plugin
     handler403 = 'allianceauth.views.Generic403Redirect'
     handler400 = 'allianceauth.views.Generic400Redirect'
     ```
-
+6. Restart AllianceAuth.
 
 
 Settings
