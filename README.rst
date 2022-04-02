@@ -32,7 +32,9 @@ Install plugin
 1. :code:`pip install allianceauth-graphql`.
 2. Add :code:`'allianceauth_graphql'` (note the underscore) to the bottom of your :code:`INSTALLED_APPS` in the local.py settings file.
 3. Edit your projects url.py file:
+
    > It should look something like this
+
    .. code:: python
     from django.conf.urls import include, url
     from allianceauth import urls
@@ -45,7 +47,10 @@ Install plugin
     handler404 = 'allianceauth.views.Generic404Redirect'
     handler403 = 'allianceauth.views.Generic403Redirect'
     handler400 = 'allianceauth.views.Generic400Redirect'
+
    > After the edit:
+
+
    .. code:: python
         from django.conf.urls import include, url
         from allianceauth import urls
