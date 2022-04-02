@@ -31,25 +31,11 @@ Install plugin
     ``` python
     'allianceauth_graphql',
     'graphene-django',
-    'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
-    "graphql_auth",
     ```
 3. Add the following settings at the bottom of your local.py file:
     ``` python
     GRAPHENE = {
         'SCHEMA': 'allianceauth_graphql.schema.schema',
-        'MIDDLEWARE': [
-            'graphql_jwt.middleware.JSONWebTokenMiddleware',
-        ],
-    }
-
-    AUTHENTICATION_BACKENDS += [
-        "graphql_auth.backends.GraphQLAuthBackend",
-    ]
-
-    GRAPHQL_JWT = {
-        "JWT_VERIFY_EXPIRATION": True,
-        "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
     }
     ```
 4. Run migrations.
