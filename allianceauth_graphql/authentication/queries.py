@@ -6,7 +6,7 @@ from django.conf import settings
 
 from allianceauth.eveonline.models import EveCharacter
 
-from .types import GroupType, StateType
+from .types import GroupType, StateType, UserProfileType
 from ..eveonline.types import EveCharacterType
 
 if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
@@ -18,6 +18,7 @@ else:
 
 class Query:
     login_url = graphene.String()
+    me = graphene.Field(UserProfileType)
     user_groups = graphene.List(GroupType)
     user_characters = graphene.List(EveCharacterType)
     user_state = graphene.Field(StateType)
@@ -32,6 +33,10 @@ class Query:
         redirect_url, state = oauth.authorization_url(app_settings.ESI_OAUTH_LOGIN_URL)
 
         return redirect_url
+
+    @login_required
+    def resolve_me(self, info):
+        return info.context.user.profile
 
     @login_required
     def resolve_user_groups(self, info):

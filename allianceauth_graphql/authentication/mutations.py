@@ -1,9 +1,11 @@
 import graphene
 import graphql_jwt
 from graphql_jwt.shortcuts import get_token
+from graphql_jwt.decorators import login_required
 from django.contrib.auth import authenticate
 
 from esi.models import Token
+from allianceauth.authentication.models import CharacterOwnership
 
 from .types import UserProfileType
 from .errors import UserNotRegisteredError
@@ -39,6 +41,36 @@ class EsiTokenAuthMutation(graphene.Mutation):
         token = get_token(user)
 
         return cls(me=user.profile, token=token)
+
+
+class ChangeMainCharacterMutation(graphene.Mutation):
+    class Arguments:
+        new_main_character_id = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    me = graphene.Field(UserProfileType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, new_main_character_id):
+        errors = []
+        profile = info.context.user.profile
+        try:
+            co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=info.context.user)
+            ok = True
+        except CharacterOwnership.DoesNotExist:
+            ok = False
+            if not CharacterOwnership.objects.filter(character__character_id=new_main_character_id).exists():
+                errors.append("You never added this character")
+            else:
+                errors.append("You don't own this character")
+
+        if ok:
+            profile.main_character = co.character
+            profile.save(update_fields=['main_character'])
+
+        return cls(ok=ok, errors=errors, me=profile)
 
 
 class Mutation:
