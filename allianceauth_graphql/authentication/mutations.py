@@ -41,7 +41,7 @@ class EsiTokenAuthMutation(graphene.Mutation):
         return cls(me=user.profile, token=token)
 
 
-class Mutation(graphene.ObjectType):
+class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()

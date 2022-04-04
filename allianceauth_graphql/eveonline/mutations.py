@@ -1,5 +1,5 @@
 import graphene
 
 
-class Mutation(graphene.ObjectType):
+class Mutation:
     pass
