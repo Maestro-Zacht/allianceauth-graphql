@@ -76,4 +76,5 @@ class ChangeMainCharacterMutation(graphene.Mutation):
 class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
-    refresh_token = graphql_jwt.Refresh.Field()
+    # refresh_token = graphql_jwt.Refresh.Field()
+    change_main_character = ChangeMainCharacterMutation.Field()
