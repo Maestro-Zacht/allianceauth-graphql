@@ -73,8 +73,32 @@ class ChangeMainCharacterMutation(graphene.Mutation):
         return cls(ok=ok, errors=errors, me=profile)
 
 
+class AddCharacterMutation(graphene.Mutation):
+    class Arguments:
+        new_char_sso_token = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    me = graphene.Field(UserProfileType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, new_char_sso_token):
+        errors = []
+        user = info.context.user
+        token_obj = Token.objects.create_from_code(new_char_sso_token, user=user)
+        if not CharacterOwnership.objects.filter(user=user, character_id=token_obj.character_id, owner_hash=token_obj.character_owner_hash).exists():
+            errors.append("This character already has an account")
+            ok = False
+        else:
+            ok = True
+
+        return cls(ok=ok, me=user.profile, errors=errors)
+
+
 class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
     # refresh_token = graphql_jwt.Refresh.Field()
     change_main_character = ChangeMainCharacterMutation.Field()
+    add_character = AddCharacterMutation.Field()
