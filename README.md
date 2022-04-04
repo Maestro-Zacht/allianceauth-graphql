@@ -14,7 +14,7 @@ Free software: GNU General Public License v3
 Usage
 =====
 
-This version is still in pre-alpha, as of v0.1.1 it does nothing.
+This version is still in pre-alpha, as of v0.2.1 it only implements login.
 
 
 Setup
