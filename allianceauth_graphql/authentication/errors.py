@@ -1,0 +1,2 @@
+class UserNotRegisteredError(Exception):
+    pass
