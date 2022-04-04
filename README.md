@@ -30,16 +30,31 @@ Install plugin
 2. Add the following apps to the bottom of your `INSTALLED_APPS` in the local.py settings file:
     ``` python
     'allianceauth_graphql',
-    'graphene-django',
+    'graphene_django',
     ```
-3. Add the following settings at the bottom of your local.py file:
+3. Add the following settings to your local.py file:
     ``` python
+    from datetime import timedelta
+
+    # ...
+
     GRAPHENE = {
         'SCHEMA': 'allianceauth_graphql.schema.schema',
+        "MIDDLEWARE": [
+            "graphql_jwt.middleware.JSONWebTokenMiddleware",
+        ],
+    }
+
+    AUTHENTICATION_BACKENDS += [
+        "graphql_jwt.backends.JSONWebTokenBackend",
+    ]
+
+    GRAPHQL_JWT = {
+        "JWT_VERIFY_EXPIRATION": True,
+        "JWT_EXPIRATION_DELTA": timedelta(days=1),
     }
     ```
-4. Run migrations.
-5. Edit your projects url.py file:
+4. Edit your projects url.py file:
 
    > It should looks something like this
 
@@ -74,15 +89,16 @@ Install plugin
     handler403 = 'allianceauth.views.Generic403Redirect'
     handler400 = 'allianceauth.views.Generic400Redirect'
     ```
-6. Restart AllianceAuth.
+5. Restart AllianceAuth.
 
 
 Settings
 --------
 
-| Setting       | Default | Description                          |
-| ------------- | ------- | ------------------------------------ |
-| SHOW_GRAPHIQL | `True`  | Shows the graphiql UI in the browser |
+| Setting              | Default          | Description                                                                                                                                 |
+| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| SHOW_GRAPHIQL        | `True`           | Shows the graphiql UI in the browser                                                                                                        |
+| GRAPHQL_LOGIN_SCOPES | `['publicData']` | Tokens needed. Unlike AllianceAuth pages, you need to login with the scopes you'll use, otherwise you won't be able to perform some queries |
 
 
 
