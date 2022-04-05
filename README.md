@@ -11,11 +11,7 @@ GraphQL integration for AllianceAuth
 Free software: GNU General Public License v3
 
 
-Usage
-=====
-
-This version is still in pre-alpha, as of v0.2.1 it only implements login.
-
+This version is in alpha, please open an issue if you face any bug.
 
 Setup
 =====
@@ -52,8 +48,10 @@ Install plugin
     GRAPHQL_JWT = {
         "JWT_VERIFY_EXPIRATION": True,
         "JWT_EXPIRATION_DELTA": timedelta(days=1),
+        "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
     }
     ```
+    Feel free to edit the expiration limits of your tokens.
 4. Edit your projects url.py file:
 
    > It should looks something like this

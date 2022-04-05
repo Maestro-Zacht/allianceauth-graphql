@@ -28,7 +28,7 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: 3.2',
         'Operating System :: POSIX :: Linux',
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
@@ -53,6 +53,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/Maestro-Zacht/allianceauth-graphql',
-    version='0.2.1',
+    version='0.3.0',
     zip_safe=False,
 )
