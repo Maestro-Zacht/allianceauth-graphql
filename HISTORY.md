@@ -1,7 +1,10 @@
 History
 =======
 
-## v0.2.2 (2022-04-05)
+## v0.3.1 (2022-04-05)
+* Fixed wrong id reference in addCharacter mutation
+
+## v0.3.0 (2022-04-05)
 Implemented all the views in the authentication app:
 * Change main character
 * Add a character
