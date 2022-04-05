@@ -1,6 +1,7 @@
 import graphene
 import graphql_jwt
 from graphql_jwt.shortcuts import get_token
+from graphql_jwt.refresh_token.shortcuts import create_refresh_token
 from graphql_jwt.decorators import login_required
 from django.contrib.auth import authenticate
 
@@ -19,6 +20,7 @@ class EsiTokenAuthMutation(graphene.Mutation):
     """
     me = graphene.Field(UserProfileType)
     token = graphene.String()
+    refresh_token = graphene.String()
 
     class Arguments:
         sso_token = graphene.String(required=True, description="The code param received from esi callback")
@@ -44,8 +46,9 @@ class EsiTokenAuthMutation(graphene.Mutation):
             raise Exception('Unable to authenticate the selected character')
 
         token = get_token(user)
+        refresh_token = create_refresh_token(user).get_token()
 
-        return cls(me=user.profile, token=token)
+        return cls(me=user.profile, token=token, refresh_token=refresh_token)
 
 
 class ChangeMainCharacterMutation(graphene.Mutation):
@@ -109,6 +112,6 @@ class AddCharacterMutation(graphene.Mutation):
 class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
-    # refresh_token = graphql_jwt.Refresh.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
     change_main_character = ChangeMainCharacterMutation.Field()
     add_character = AddCharacterMutation.Field()
