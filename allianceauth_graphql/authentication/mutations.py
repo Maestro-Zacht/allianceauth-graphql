@@ -12,11 +12,16 @@ from .errors import UserNotRegisteredError
 
 
 class EsiTokenAuthMutation(graphene.Mutation):
+    """Login Mutation
+
+    Receives the esi code from callback and provides a JWT token for the Authorization header:
+    Authorization: JWT <token>
+    """
     me = graphene.Field(UserProfileType)
     token = graphene.String()
 
     class Arguments:
-        sso_token = graphene.String(required=True)
+        sso_token = graphene.String(required=True, description="The code param received from esi callback")
 
     @classmethod
     def mutate(cls, root, info, sso_token):
@@ -44,6 +49,8 @@ class EsiTokenAuthMutation(graphene.Mutation):
 
 
 class ChangeMainCharacterMutation(graphene.Mutation):
+    """Mutation for changing main character, assuming this character has already been added and it's not owned by another user
+    """
     class Arguments:
         new_main_character_id = graphene.Int(required=True)
 
@@ -74,6 +81,9 @@ class ChangeMainCharacterMutation(graphene.Mutation):
 
 
 class AddCharacterMutation(graphene.Mutation):
+    """Mutation for adding a new character to the list of alts.
+    Receives the esi code from callback of the character to add.
+    """
     class Arguments:
         new_char_sso_token = graphene.String(required=True)
 

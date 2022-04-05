@@ -20,8 +20,7 @@ class Query:
     login_url = graphene.String()
     me = graphene.Field(UserProfileType)
     user_groups = graphene.List(GroupType)
-    user_characters = graphene.List(EveCharacterType)
-    user_state = graphene.Field(StateType)
+    user_characters = graphene.List(EveCharacterType, description="List of the user's alts")
 
     def resolve_login_url(self, info):
         oauth = OAuth2Session(
@@ -52,7 +51,3 @@ class Query:
         return EveCharacter.objects.filter(character_ownership__user=info.context.user)\
             .select_related()\
             .order_by('character_name')
-
-    @login_required
-    def resolve_user_state(self, info):
-        return info.context.user.profile.state
