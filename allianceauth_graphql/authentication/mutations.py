@@ -100,7 +100,7 @@ class AddCharacterMutation(graphene.Mutation):
         errors = []
         user = info.context.user
         token_obj = Token.objects.create_from_code(new_char_sso_token, user=user)
-        if not CharacterOwnership.objects.filter(user=user, character_id=token_obj.character_id, owner_hash=token_obj.character_owner_hash).exists():
+        if not CharacterOwnership.objects.filter(user=user, character__character_id=token_obj.character_id, owner_hash=token_obj.character_owner_hash).exists():
             errors.append("This character already has an account")
             ok = False
         else:
