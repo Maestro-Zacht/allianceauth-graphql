@@ -11,7 +11,7 @@ GraphQL integration for AllianceAuth
 Free software: GNU General Public License v3
 
 
-This version is in beta, please open an issue if you face any bug.
+This version is in alpha, please open an issue if you face any bug.
 
 Setup
 =====
