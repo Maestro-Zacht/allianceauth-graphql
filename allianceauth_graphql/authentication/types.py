@@ -6,6 +6,7 @@ from django.contrib.auth.models import Group
 class StateType(DjangoObjectType):
     class Meta:
         model = State
+        fields = ('name', )
 
 
 class UserProfileType(DjangoObjectType):
