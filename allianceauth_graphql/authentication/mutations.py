@@ -22,8 +22,9 @@ REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 class EsiTokenAuthMutation(graphene.Mutation):
     """Login Mutation
 
-    Receives the esi code from callback and provides a JWT token for the Authorization header:
-    Authorization: JWT <token>
+    Receives the esi code from callback and provides a token:
+    in case the status is "LOGIN", the token is for the Authorization header (Authorization: JWT <token>);
+    in case the status is "REGISTRATION", the token is for the RegistrationMutation mutation argument.
     """
     me = graphene.Field(UserProfileType)
     token = graphene.String()
@@ -79,6 +80,10 @@ class EsiTokenAuthMutation(graphene.Mutation):
 
 
 class RegistrationMutation(DjangoFormMutation):
+    """Email registration
+
+    Receives the token from LoginMutation (if the status is "REGISTRATION") and the email and sends an email with the activation link.
+    """
     class Meta:
         form_class = EmailRegistrationForm
 
