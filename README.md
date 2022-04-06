@@ -27,6 +27,7 @@ Install plugin
     ``` python
     'allianceauth_graphql',
     'graphene_django',
+    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     ```
 3. Add the following settings to your local.py file:
     ``` python
@@ -47,6 +48,7 @@ Install plugin
 
     GRAPHQL_JWT = {
         "JWT_VERIFY_EXPIRATION": True,
+        "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
         "JWT_EXPIRATION_DELTA": timedelta(days=1),
         "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
     }
@@ -87,17 +89,19 @@ Install plugin
     handler403 = 'allianceauth.views.Generic403Redirect'
     handler400 = 'allianceauth.views.Generic400Redirect'
     ```
-5. Restart AllianceAuth.
+5. Run migrations.
+6. Restart AllianceAuth.
 
 
 Settings
 --------
 
-| Setting              | Default          | Description                                                                                                                                 |
-| -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| SHOW_GRAPHIQL        | `True`           | Shows the graphiql UI in the browser                                                                                                        |
-| GRAPHQL_LOGIN_SCOPES | `['publicData']` | Tokens needed. Unlike AllianceAuth pages, you need to login with the scopes you'll use, otherwise you won't be able to perform some queries |
-
+| Setting              | Default                   | Description                                                                                                                                 |
+| -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| SHOW_GRAPHIQL        | `True`                    | Shows the graphiql UI in the browser                                                                                                        |
+| GRAPHQL_LOGIN_SCOPES | `['publicData']`          | Tokens needed. Unlike AllianceAuth pages, you need to login with the scopes you'll use, otherwise you won't be able to perform some queries |
+| REDIRECT_SITE        | No default                | The URL domain for redirecting after email verification                                                                                     |
+| REDIRECT_PATH        | `/registration/callback/` | Path to append to REDIRECT_SITE for building the redirect URL                                                                               |
 
 
 
