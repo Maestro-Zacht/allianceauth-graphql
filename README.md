@@ -100,7 +100,7 @@ Settings
 | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | SHOW_GRAPHIQL        | `True`                    | Shows the graphiql UI in the browser                                                                                                        |
 | GRAPHQL_LOGIN_SCOPES | `['publicData']`          | Tokens needed. Unlike AllianceAuth pages, you need to login with the scopes you'll use, otherwise you won't be able to perform some queries |
-| REDIRECT_SITE        | No default                | The URL domain for redirecting after email verification                                                                                     |
+| REDIRECT_SITE        | No default                | The URL domain for redirecting after email verification. It has to have the protocol and not the slash at the end: `http(s)://<yoursite>`   |
 | REDIRECT_PATH        | `/registration/callback/` | Path to append to REDIRECT_SITE for building the redirect URL                                                                               |
 
 

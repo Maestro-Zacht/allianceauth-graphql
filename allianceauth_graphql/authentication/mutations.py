@@ -100,8 +100,6 @@ class RegistrationMutation(DjangoFormMutation):
 
         activation_key = signing.dumps([user_id, email], salt=REGISTRATION_SALT)
 
-        info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email'))
-
         full_url = info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email')) + f"?activation_key={activation_key}"
 
         send_mail(
