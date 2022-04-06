@@ -1,6 +1,9 @@
 History
 =======
 
+## v0.4.0 (2022-04-06)
+* Implemented the 3 steps registration
+
 ## v0.3.1 (2022-04-05)
 * Fixed wrong id reference in addCharacter mutation
 
