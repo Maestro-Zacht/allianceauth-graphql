@@ -6,7 +6,7 @@ from django.conf import settings
 
 from allianceauth.eveonline.models import EveCharacter
 
-from .types import GroupType, StateType, UserProfileType
+from .types import GroupType, UserProfileType
 from ..eveonline.types import EveCharacterType
 
 if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:

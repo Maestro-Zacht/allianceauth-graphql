@@ -4,12 +4,19 @@ from graphql_jwt.shortcuts import get_token
 from graphql_jwt.refresh_token.shortcuts import create_refresh_token
 from graphql_jwt.decorators import login_required
 from django.contrib.auth import authenticate
+from django.urls import reverse
+from django.core.mail import send_mail
+from django.core import signing
+from django.conf import settings
+from graphene_django.forms.mutation import DjangoFormMutation
 
 from esi.models import Token
 from allianceauth.authentication.models import CharacterOwnership
 
-from .types import UserProfileType
-from .errors import UserNotRegisteredError
+from .forms import EmailRegistrationForm
+from .types import UserProfileType, LoginStatus
+
+REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 
 
 class EsiTokenAuthMutation(graphene.Mutation):
@@ -21,14 +28,18 @@ class EsiTokenAuthMutation(graphene.Mutation):
     me = graphene.Field(UserProfileType)
     token = graphene.String()
     refresh_token = graphene.String()
+    errors = graphene.List(graphene.String)
+    status = graphene.Field(LoginStatus)
 
     class Arguments:
         sso_token = graphene.String(required=True, description="The code param received from esi callback")
 
     @classmethod
     def mutate(cls, root, info, sso_token):
+        errors = []
         token_obj = Token.objects.create_from_code(sso_token)
         user = authenticate(token=token_obj)
+        status = 0
 
         if user:
             token_obj.user = user
@@ -38,17 +49,79 @@ class EsiTokenAuthMutation(graphene.Mutation):
                 token_obj.save()
 
             if user.is_active:
-                token = get_token(user)
+                status = 1
+            elif not user.email:
+                status = 2
+                info.context.session.update({'registration_uid': user.pk})
+                info.context.session.save()
             else:
-                raise UserNotRegisteredError('User is not registered. Register to AllianceAuth site first.')
+                errors.append('Unable to authenticate the selected character')
 
         else:
-            raise Exception('Unable to authenticate the selected character')
+            errors.append('Unable to authenticate the selected character')
 
-        token = get_token(user)
-        refresh_token = create_refresh_token(user).get_token()
+        if status == 1:
+            token = get_token(user)
+            refresh_token = create_refresh_token(user).get_token()
+        elif status == 2:
+            refresh_token = None
+            token = signing.dumps(user.pk)
+        else:
+            token = refresh_token = None
 
-        return cls(me=user.profile, token=token, refresh_token=refresh_token)
+        return cls(
+            me=user.profile if status == 1 else None,
+            token=token,
+            refresh_token=refresh_token,
+            errors=errors,
+            status=status
+        )
+
+
+class RegistrationMutation(DjangoFormMutation):
+    class Meta:
+        form_class = EmailRegistrationForm
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+
+    @classmethod
+    def perform_mutate(cls, form, info):
+        errors = []
+        user_id = signing.loads(form.data['token'])
+        email = form.data['email']
+
+        site = getattr(settings, 'REDIRECT_SITE')
+
+        activation_key = signing.dumps([user_id, email], salt=REGISTRATION_SALT)
+
+        info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email'))
+
+        full_url = info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email')) + f"?activation_key={activation_key}"
+
+        send_mail(
+            f'Account activation for {site}',
+            f"""< p >
+            You're receiving this email because someone has entered this email address while registering for an account on {site}
+            < /p >
+
+            < p >
+            If this was you, please click on the link below to confirm your email address:
+            < p >
+
+            < p >
+            < a href="{full_url}" > Confirm email address < /a >
+            < / p >
+
+            < p >
+            If this was not you, it is safe to ignore this email.
+            < /p >""",
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False
+        )
+
+        return cls(ok=True, errors=errors, **form.data)
 
 
 class ChangeMainCharacterMutation(graphene.Mutation):
@@ -113,5 +186,7 @@ class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
+    revoke_token = graphql_jwt.Revoke.Field()
     change_main_character = ChangeMainCharacterMutation.Field()
     add_character = AddCharacterMutation.Field()
+    email_registration = RegistrationMutation.Field()
