@@ -2,7 +2,6 @@ from django.core import signing
 from django.shortcuts import redirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 
