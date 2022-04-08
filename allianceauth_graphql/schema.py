@@ -13,24 +13,28 @@ def create_schema() -> graphene.Schema:
     for app in settings.INSTALLED_APPS:
         if app.startswith('allianceauth.'):
             import_module = app.replace('allianceauth.', 'allianceauth_graphql.')
-        elif app in community_creations:
-            import_module = f'community_creations.{app}_integration'
+        # elif app == 'allianceauth_pve':
+        #     import_module = 'allianceauth_pve_integration'
         else:
             import_module = None
 
         if import_module is not None:
             try:
+                print(import_module)
                 module = importlib.import_module(import_module)
             except ModuleNotFoundError:
-                pass
+                print('fail')
             else:
+                print("success")
                 queries.append(module.Query)
                 mutations.append(module.Mutation)
 
-    class Query(*queries, graphene.ObjectType):
+    from . import allianceauth_pve_integration
+
+    class Query(*queries, allianceauth_pve_integration.Query, graphene.ObjectType):
         pass
 
-    class Mutation(*mutations, graphene.ObjectType):
+    class Mutation(*mutations, allianceauth_pve_integration.Mutation, graphene.ObjectType):
         pass
 
     return graphene.Schema(query=Query, mutation=Mutation)
