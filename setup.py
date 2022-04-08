@@ -14,6 +14,7 @@ requirements = [
     'allianceauth>=2.11.2,<3.0.0',
     'graphene-django>=2.13,<3.0.0',
     'django-graphql-jwt>=0.3.0,<0.4.0',
+    'graphene-django-extras==0.4.9',
     # 'django-cors-headers>=3.7,<4.0.0',
 ]
 
