@@ -10,7 +10,7 @@ from .types import RotationType, EntryType
 
 class Query:
     rotation = graphene.Field(RotationType, id=graphene.Int(required=True))
-    rotations = graphene.List(RotationType)
+    closed_rotations = graphene.List(RotationType)
     # running_averages = graphene.List(CharacterStatsType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     # char_running_averages = graphene.Field(CharacterStatsType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
@@ -21,7 +21,7 @@ class Query:
         return Rotation.objects.get(pk=id)
 
     @login_required
-    def resolve_rotations(self, info):
+    def resolve_closed_rotations(self, info):
         return Rotation.objects.filter(is_closed=True).order_by('-closed_at')
 
     # @login_required
