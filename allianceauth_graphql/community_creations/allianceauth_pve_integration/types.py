@@ -11,7 +11,6 @@ class EntryCharacterType(DjangoObjectType):
 
 class EntryType(DjangoObjectType):
     estimated_total_after_tax = graphene.Float()
-    estimated_share_value = graphene.Float()
     total_shares_count = graphene.Int()
 
     class Meta:

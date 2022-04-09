@@ -4,13 +4,12 @@ import graphene
 class EntryCharacterInput(graphene.InputObjectType):
     share_count = graphene.Int(required=True)
     character_id = graphene.Int(required=True)
-    helped_setup = graphene.Boolean(required=True)
+    helped_setup = graphene.Boolean(default_value=False)
 
 
 class EntryInput(graphene.InputObjectType):
     estimated_total = graphene.Float(required=True)
     shares = graphene.List(EntryCharacterInput, required=True)
-    helpedSetup = graphene.Boolean()
 
 
 class CreateRotationInput(graphene.InputObjectType):
