@@ -1,14 +1,18 @@
 History
 =======
 
+## v0.5.1
+* Fixed community creations dyncamic import.
+* Added extras_requires in pip install.
+
 ## v0.5.0 (2022-04-08)
-* Added support for [allianceauth-pve](https://github.com/Maestro-Zacht/allianceauth-pve) package
+* Added support for [allianceauth-pve](https://github.com/Maestro-Zacht/allianceauth-pve) package.
 
 ## v0.4.0 (2022-04-06)
-* Implemented the 3 steps registration
+* Implemented the 3 steps registration.
 
 ## v0.3.1 (2022-04-05)
-* Fixed wrong id reference in addCharacter mutation
+* Fixed wrong id reference in addCharacter mutation.
 
 ## v0.3.0 (2022-04-05)
 Implemented all the views in the authentication app:
