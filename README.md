@@ -93,6 +93,15 @@ Install plugin
 6. Restart AllianceAuth.
 
 
+Community Creations Integration
+-------------------------------
+
+Currently the package supports the integration with the following community packages:
+* allianceauth-pve
+
+To install the dependencies needed, run `pip install allianceauth-graphql[package1,package2]` for all the packages you want to integrate.
+
+
 Settings
 --------
 

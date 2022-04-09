@@ -1,6 +1,9 @@
 History
 =======
 
+## v0.5.0 (2022-04-08)
+* Added support for [allianceauth-pve](https://github.com/Maestro-Zacht/allianceauth-pve) package
+
 ## v0.4.0 (2022-04-06)
 * Implemented the 3 steps registration
 
