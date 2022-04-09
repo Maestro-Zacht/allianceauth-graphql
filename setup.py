@@ -14,7 +14,6 @@ requirements = [
     'allianceauth>=2.11.2,<3.0.0',
     'graphene-django>=2.13,<3.0.0',
     'django-graphql-jwt>=0.3.0,<0.4.0',
-    'graphene-django-extras==0.4.9',
     # 'django-cors-headers>=3.7,<4.0.0',
 ]
 
@@ -44,6 +43,11 @@ setup(
     ],
     description="GraphQL integration for AllianceAuth",
     install_requires=requirements,
+    extras_requires={
+        'allianceauth-pve': [
+            'graphene-django-extras>=0.4.6,<0.5.0',
+        ]
+    },
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/markdown',
