@@ -43,7 +43,7 @@ setup(
     ],
     description="GraphQL integration for AllianceAuth",
     install_requires=requirements,
-    extras_requires={
+    extras_require={
         'allianceauth-pve': [
             'graphene-django-extras>=0.4.6,<0.5.0',
             'allianceauth-pve>=0.2.0,<0.3.0',
