@@ -65,7 +65,7 @@ class CreateRotation(graphene.Mutation):
     def mutate(root, info, input):
         user = info.context.user
 
-        if not user.is_admin:
+        if not user.is_staff:
             raise Exception('Permission Denied')
 
         rotation = Rotation.objects.create(
@@ -88,7 +88,7 @@ class CloseRotation(graphene.Mutation):
         user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)
 
-        if not user.is_admin:
+        if not user.is_staff:
             raise Exception('Permission Denied')
 
         if rotation.is_closed:
