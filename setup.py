@@ -59,6 +59,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/Maestro-Zacht/allianceauth-graphql',
-    version='0.5.4',
+    version='0.5.5',
     zip_safe=False,
 )
