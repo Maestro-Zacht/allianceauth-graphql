@@ -1,7 +1,25 @@
 import graphene
 from graphene_django import DjangoObjectType
+from django.contrib.auth import get_user_model
+
+from allianceauth.services.hooks import get_extension_logger
 
 from allianceauth_pve.models import Rotation, EntryCharacter, Entry
+
+
+logger = get_extension_logger(__name__)
+
+User = get_user_model()
+
+
+class RattingSummaryType(graphene.ObjectType):
+    character = graphene.Field('allianceauth_graphql.eveonline.types.EveCharacterType')
+    helped_setups = graphene.Int()
+    estimated_total = graphene.Float()
+    actual_total = graphene.Float()
+
+    def resolve_character(self, info):
+        return User.objects.get(pk=self['character']).profile.main_character
 
 
 class EntryCharacterType(DjangoObjectType):
@@ -21,6 +39,7 @@ class RotationType(DjangoObjectType):
     sales_percentage = graphene.Float()
     days_since = graphene.Int()
     estimated_total = graphene.Float()
+    summary = graphene.List(RattingSummaryType)
 
     class Meta:
         model = Rotation
