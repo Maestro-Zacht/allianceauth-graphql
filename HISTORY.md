@@ -1,6 +1,9 @@
 History
 =======
 
+## v0.5.2
+* Support for allianceauth-pve v0.3.0
+
 ## v0.5.1
 * Fixed community creations dyncamic import.
 * Added extras_requires in pip install.

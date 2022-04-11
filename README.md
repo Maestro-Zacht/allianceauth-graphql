@@ -90,7 +90,8 @@ Install plugin
     handler400 = 'allianceauth.views.Generic400Redirect'
     ```
 5. Run migrations.
-6. Restart AllianceAuth.
+6. If you have `SHOW_GRAPHIQL` setting set to `True` (see below), run collectstatics
+7. Restart AllianceAuth.
 
 
 Community Creations Integration
