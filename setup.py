@@ -46,7 +46,7 @@ setup(
     extras_require={
         'allianceauth-pve': [
             'graphene-django-extras>=0.4.6,<0.5.0',
-            'allianceauth-pve>=0.2.0,<0.3.0',
+            'allianceauth-pve>=0.3.0,<0.4.0',
         ]
     },
     license="GNU General Public License v3",
