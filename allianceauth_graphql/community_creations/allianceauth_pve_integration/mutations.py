@@ -1,6 +1,6 @@
 import datetime
 import graphene
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import login_required, permission_required
 
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -21,6 +21,7 @@ class CreateRattingEntry(graphene.Mutation):
     ok = graphene.Boolean()
     rotation = graphene.Field(RotationType)
 
+    @permission_required('allianceauth_pve.add_entry')
     @login_required
     def mutate(root, info, input, rotation_id):
         entry = EntryService.create_entry(info.context.user, rotation_id, input.estimated_total, input.shares)
@@ -35,6 +36,7 @@ class ModifyRattingEntry(graphene.Mutation):
         input = EntryInput(required=True)
         entry_id = graphene.ID(required=True)
 
+    @permission_required('allianceauth_pve.change_entry')
     @login_required
     def mutate(root, info, input, entry_id):
         entry = EntryService.edit_entry(info.context.user, entry_id, input.estimated_total, input.shares)
@@ -48,6 +50,7 @@ class DeleteRattingEntry(graphene.Mutation):
     class Arguments:
         entry_id = graphene.ID(required=True)
 
+    @permission_required('allianceauth_pve.delete_entry')
     @login_required
     def mutate(root, info, entry_id):
         rotation = EntryService.delete_entry(info.context.user, entry_id)
@@ -61,13 +64,9 @@ class CreateRotation(graphene.Mutation):
     class Arguments:
         input = CreateRotationInput(required=True)
 
+    @permission_required('allianceauth_pve.add_rotation')
     @login_required
     def mutate(root, info, input):
-        user = info.context.user
-
-        if not user.is_staff:
-            raise Exception('Permission Denied')
-
         rotation = Rotation.objects.create(
             name=input.name,
             tax_rate=input.tax_rate,
@@ -83,6 +82,7 @@ class CloseRotation(graphene.Mutation):
     class Arguments:
         input = RotationCloseInput(required=True)
 
+    @permission_required('allianceauth_pve.close_rotation')
     @login_required
     def mutate(root, info, input):
         user = info.context.user
@@ -99,42 +99,8 @@ class CloseRotation(graphene.Mutation):
         rotation.closed_at = timezone.now()
         rotation.save()
 
-        # update_rotation_totals(rotation_id=rotation.pk).execute()
-
         for entry in rotation.entries.all():
             entry.update_share_totals()
-
-        shares = EntryCharacter.objects.filter(entry__rotation=rotation)
-        User = get_user_model()
-        chars = User.objects.filter(pk__in=shares.values('character'))
-        rotation.summary.all().delete()
-
-        for character in chars.all():
-            shares = EntryCharacter.objects.filter(entry__rotation=rotation, character=character)
-
-            shares_totals = shares.aggregate(estimated_total=Sum('estimated_share_total'), actual_total=Sum('actual_share_total'))
-
-            helped_setups = 0
-
-            start_date = rotation.created_at.date()
-            end_date = rotation.closed_at.date() if rotation.is_closed else timezone.now().date()
-
-            shares_helped_setup = shares.filter(helped_setup=True)
-
-            for day in (start_date + datetime.timedelta(n) for n in range((end_date - start_date).days + 1)):
-                for day_share in shares_helped_setup.filter(entry__created_at__date=day).all():
-                    if day_share.entry.shares.count() > 2:
-                        helped_setups += 1
-                        break
-
-            rotation.summary.update_or_create(
-                character=character,
-                defaults={
-                    'estimated_total': shares_totals['estimated_total'],
-                    'actual_total': shares_totals['actual_total'],
-                    'helped_setup': helped_setups,
-                }
-            )
 
         return CloseRotation(ok=True)
 
