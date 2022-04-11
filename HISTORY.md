@@ -1,7 +1,10 @@
 History
 =======
 
-## v0.5.2
+## v0.5.3 (2022-04-11)
+* Added running averages
+
+## v0.5.2 (2022-04-11)
 * Support for allianceauth-pve v0.3.0
 
 ## v0.5.1
