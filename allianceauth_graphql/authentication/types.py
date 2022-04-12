@@ -18,6 +18,7 @@ class UserProfileType(DjangoObjectType):
 class GroupType(DjangoObjectType):
     class Meta:
         model = Group
+        fields = ('name',)
 
 
 class LoginStatus(graphene.Enum):
