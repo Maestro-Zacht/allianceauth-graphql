@@ -88,9 +88,6 @@ class CloseRotation(graphene.Mutation):
         user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)
 
-        if not user.is_staff:
-            raise Exception('Permission Denied')
-
         if rotation.is_closed:
             raise Exception('Rotation is closed and can not be modified')
 
