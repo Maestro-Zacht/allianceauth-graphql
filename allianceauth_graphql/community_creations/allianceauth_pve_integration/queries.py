@@ -3,12 +3,20 @@ from graphql_jwt.decorators import login_required, permission_required
 from graphene_django_extras import DjangoFilterPaginateListField, LimitOffsetGraphqlPagination
 
 from django.utils import timezone
-from django.db.models import OuterRef, Sum, Subquery
+from django.db.models import Sum, Subquery
 from django.db.models.functions import Coalesce
+from django.contrib.auth import get_user_model
+
+from allianceauth.authentication.models import CharacterOwnership
+from allianceauth.eveonline.models import EveCharacter
 
 from allianceauth_pve.models import Rotation, EntryCharacter
+from allianceauth_graphql.eveonline.types import EveCharacterType
 
 from .types import RotationType, EntryType, RattingSummaryType
+
+
+User = get_user_model()
 
 
 class Query:
@@ -17,6 +25,7 @@ class Query:
     char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
     rotation_entries = DjangoFilterPaginateListField(EntryType, pagination=LimitOffsetGraphqlPagination(), fields=['rotation_id'])
+    search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(required=True))
 
     @permission_required('allianceauth_pve.view_rotation')
     @login_required
@@ -42,3 +51,9 @@ class Query:
     @login_required
     def resolve_active_rotations(self, info):
         return Rotation.objects.filter(is_closed=False).order_by('-priority')
+
+    @permission_required('allianceauth_pve.view_rotation')
+    @login_required
+    def resolve_search_rotation_characters(self, info, name):
+        mains = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user__profile__main_character')
+        return EveCharacter.objects.filter(pk__in=mains).distinct()
