@@ -39,10 +39,10 @@ class Query:
 
     @login_required
     def resolve_char_running_averages(self, info, start_date, end_date=timezone.now().date()):
-        char = info.context.user
-        rotations = Rotation.objects.filter(closed_at__range=(start_date, end_date)).get_setup_summary().filter(character_id=char).values('total_setups')
-        return EntryCharacter.objects.filter(entry__rotation__closed_at__range=(start_date, end_date), character=char)\
-            .values('character').order_by()\
+        user = info.context.user
+        rotations = Rotation.objects.filter(closed_at__range=(start_date, end_date)).get_setup_summary().filter(user_id=user).values('total_setups')
+        return EntryCharacter.objects.filter(entry__rotation__closed_at__range=(start_date, end_date), user=user)\
+            .values('user').order_by()\
             .annotate(helped_setups=Coalesce(Subquery(rotations[:1]), 0))\
             .annotate(estimated_total=Sum('estimated_share_total'))\
             .annotate(actual_total=Sum('actual_share_total'))

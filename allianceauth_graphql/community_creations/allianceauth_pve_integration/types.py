@@ -19,7 +19,7 @@ class RattingSummaryType(graphene.ObjectType):
     actual_total = graphene.Float()
 
     def resolve_character(self, info):
-        return User.objects.get(pk=self['character']).profile.main_character
+        return User.objects.get(pk=self['user']).profile.main_character
 
 
 class EntryCharacterType(DjangoObjectType):
