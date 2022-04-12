@@ -7,9 +7,6 @@ from setuptools import setup, find_packages
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.md') as history_file:
-    history = history_file.read()
-
 requirements = [
     'allianceauth>=2.11.2,<3.0.0',
     'graphene-django>=2.13,<3.0.0',
@@ -50,7 +47,7 @@ setup(
         ]
     },
     license="GNU General Public License v3",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     long_description_content_type='text/markdown',
     include_package_data=True,
     keywords='allianceauth_graphql',
