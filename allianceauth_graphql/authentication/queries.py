@@ -6,7 +6,7 @@ from django.conf import settings
 
 from allianceauth.eveonline.models import EveCharacter
 
-from .types import GroupType, UserProfileType
+from .types import GroupType, UserType
 from ..eveonline.types import EveCharacterType
 
 if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
@@ -18,7 +18,7 @@ else:
 
 class Query:
     login_url = graphene.String()
-    me = graphene.Field(UserProfileType)
+    me = graphene.Field(UserType)
     user_groups = graphene.List(GroupType)
     user_characters = graphene.List(EveCharacterType, description="List of the user's alts")
 
@@ -35,7 +35,7 @@ class Query:
 
     @login_required
     def resolve_me(self, info):
-        return info.context.user.profile
+        return info.context.user
 
     @login_required
     def resolve_user_groups(self, info):
@@ -44,7 +44,7 @@ class Query:
             groups = groups\
                 .filter(managedalliancegroup__isnull=True)\
                 .filter(managedcorpgroup__isnull=True)
-        return groups.order_by('name')
+        return groups.order_by('name').annotate(status=1)
 
     @login_required
     def resolve_user_characters(self, info):
