@@ -2,7 +2,9 @@ import graphene
 from graphql_jwt.decorators import login_required
 from esi import app_settings
 from requests_oauthlib import OAuth2Session
+
 from django.conf import settings
+from django.db.models import Value
 
 from allianceauth.eveonline.models import EveCharacter
 
@@ -44,7 +46,7 @@ class Query:
             groups = groups\
                 .filter(managedalliancegroup__isnull=True)\
                 .filter(managedcorpgroup__isnull=True)
-        return groups.order_by('name').annotate(status=1)
+        return groups.order_by('name').annotate(status=Value(1))
 
     @login_required
     def resolve_user_characters(self, info):
