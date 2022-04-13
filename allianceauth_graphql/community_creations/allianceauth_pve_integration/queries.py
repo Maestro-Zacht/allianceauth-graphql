@@ -3,15 +3,14 @@ from graphql_jwt.decorators import login_required, permission_required
 from graphene_django_extras import DjangoFilterPaginateListField, LimitOffsetGraphqlPagination
 
 from django.utils import timezone
-from django.db.models import Sum, Subquery
+from django.db.models import Sum, Subquery, Q
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 
 from allianceauth.authentication.models import CharacterOwnership
-from allianceauth.eveonline.models import EveCharacter
 
 from allianceauth_pve.models import Rotation, EntryCharacter
-from allianceauth_graphql.eveonline.types import EveCharacterType
+from allianceauth_graphql.authentication.types import UserType
 
 from .types import RotationType, EntryType, RattingSummaryType
 
@@ -25,7 +24,7 @@ class Query:
     char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
     rotation_entries = DjangoFilterPaginateListField(EntryType, pagination=LimitOffsetGraphqlPagination(), fields=['rotation_id'])
-    search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(required=True))
+    search_rotation_characters = graphene.List(UserType, name=graphene.String(required=True))
 
     @permission_required('allianceauth_pve.view_rotation')
     @login_required
@@ -55,5 +54,10 @@ class Query:
     @permission_required('allianceauth_pve.view_rotation')
     @login_required
     def resolve_search_rotation_characters(self, info, name):
-        mains = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user__profile__main_character')
-        return EveCharacter.objects.filter(pk__in=mains).distinct()
+        users_ids = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user')
+        return User.objects.filter(
+            Q(groups__permissions__codename='view_rotation') |
+            Q(user_permissions__codename='view_rotation') |
+            Q(profile__state__permissions__codename='view_rotation'),
+            pk__in=users_ids
+        )

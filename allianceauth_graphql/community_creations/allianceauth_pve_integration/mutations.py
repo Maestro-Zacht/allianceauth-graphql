@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 
 from allianceauth_pve.actions import EntryService
-from allianceauth_pve.models import Rotation, EntryCharacter
+from allianceauth_pve.models import Rotation
 
 from .inputs import EntryInput, CreateRotationInput, RotationCloseInput
 from .types import RotationType, EntryType

@@ -18,7 +18,7 @@ class UserProfileType(DjangoObjectType):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id', 'username', 'profile',)
 
 
 class GroupStatusEnum(graphene.Enum):
