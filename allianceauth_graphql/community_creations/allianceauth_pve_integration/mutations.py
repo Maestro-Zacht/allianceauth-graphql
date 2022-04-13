@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 
 from allianceauth_pve.actions import EntryService
-from allianceauth_pve.models import Rotation, EntryCharacter
+from allianceauth_pve.models import Rotation
 
 from .inputs import EntryInput, CreateRotationInput, RotationCloseInput
 from .types import RotationType, EntryType
@@ -21,8 +21,8 @@ class CreateRattingEntry(graphene.Mutation):
     ok = graphene.Boolean()
     rotation = graphene.Field(RotationType)
 
-    @permission_required('allianceauth_pve.add_entry')
     @login_required
+    @permission_required('allianceauth_pve.add_entry')
     def mutate(root, info, input, rotation_id):
         entry = EntryService.create_entry(info.context.user, rotation_id, input.estimated_total, input.shares)
         return CreateRattingEntry(ok=True, rotation=entry.rotation)
@@ -36,8 +36,8 @@ class ModifyRattingEntry(graphene.Mutation):
         input = EntryInput(required=True)
         entry_id = graphene.ID(required=True)
 
-    @permission_required('allianceauth_pve.change_entry')
     @login_required
+    @permission_required('allianceauth_pve.change_entry')
     def mutate(root, info, input, entry_id):
         entry = EntryService.edit_entry(info.context.user, entry_id, input.estimated_total, input.shares)
         return ModifyRattingEntry(ok=True, rotation=entry.rotation)
@@ -50,8 +50,8 @@ class DeleteRattingEntry(graphene.Mutation):
     class Arguments:
         entry_id = graphene.ID(required=True)
 
-    @permission_required('allianceauth_pve.delete_entry')
     @login_required
+    @permission_required('allianceauth_pve.delete_entry')
     def mutate(root, info, entry_id):
         rotation = EntryService.delete_entry(info.context.user, entry_id)
         return DeleteRattingEntry(ok=True, rotation=rotation)
@@ -64,8 +64,8 @@ class CreateRotation(graphene.Mutation):
     class Arguments:
         input = CreateRotationInput(required=True)
 
-    @permission_required('allianceauth_pve.add_rotation')
     @login_required
+    @permission_required('allianceauth_pve.add_rotation')
     def mutate(root, info, input):
         rotation = Rotation.objects.create(
             name=input.name,
@@ -82,8 +82,8 @@ class CloseRotation(graphene.Mutation):
     class Arguments:
         input = RotationCloseInput(required=True)
 
-    @permission_required('allianceauth_pve.close_rotation')
     @login_required
+    @permission_required('allianceauth_pve.close_rotation')
     def mutate(root, info, input):
         user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)

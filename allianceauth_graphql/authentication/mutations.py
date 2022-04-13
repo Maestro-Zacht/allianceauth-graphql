@@ -14,7 +14,7 @@ from esi.models import Token
 from allianceauth.authentication.models import CharacterOwnership
 
 from .forms import EmailRegistrationForm
-from .types import UserProfileType, LoginStatus
+from .types import UserType, LoginStatus
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 
@@ -26,7 +26,7 @@ class EsiTokenAuthMutation(graphene.Mutation):
     in case the status is "LOGIN", the token is for the Authorization header (Authorization: JWT <token>);
     in case the status is "REGISTRATION", the token is for the RegistrationMutation mutation argument.
     """
-    me = graphene.Field(UserProfileType)
+    me = graphene.Field(UserType)
     token = graphene.String()
     refresh_token = graphene.String()
     errors = graphene.List(graphene.String)
@@ -71,7 +71,7 @@ class EsiTokenAuthMutation(graphene.Mutation):
             token = refresh_token = None
 
         return cls(
-            me=user.profile if status == 1 else None,
+            me=user if status == 1 else None,
             token=token,
             refresh_token=refresh_token,
             errors=errors,
@@ -135,13 +135,13 @@ class ChangeMainCharacterMutation(graphene.Mutation):
 
     ok = graphene.Boolean()
     errors = graphene.List(graphene.String)
-    me = graphene.Field(UserProfileType)
+    me = graphene.Field(UserType)
 
     @classmethod
     @login_required
     def mutate(cls, root, info, new_main_character_id):
         errors = []
-        profile = info.context.user.profile
+        user = info.context.user
         try:
             co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=info.context.user)
             ok = True
@@ -153,10 +153,10 @@ class ChangeMainCharacterMutation(graphene.Mutation):
                 errors.append("You don't own this character")
 
         if ok:
-            profile.main_character = co.character
-            profile.save(update_fields=['main_character'])
+            user.profile.main_character = co.character
+            user.profile.save(update_fields=['main_character'])
 
-        return cls(ok=ok, errors=errors, me=profile)
+        return cls(ok=ok, errors=errors, me=user)
 
 
 class AddCharacterMutation(graphene.Mutation):
@@ -168,7 +168,7 @@ class AddCharacterMutation(graphene.Mutation):
 
     ok = graphene.Boolean()
     errors = graphene.List(graphene.String)
-    me = graphene.Field(UserProfileType)
+    me = graphene.Field(UserType)
 
     @classmethod
     @login_required
@@ -182,7 +182,7 @@ class AddCharacterMutation(graphene.Mutation):
         else:
             ok = True
 
-        return cls(ok=ok, me=user.profile, errors=errors)
+        return cls(ok=ok, me=user, errors=errors)
 
 
 class Mutation:
