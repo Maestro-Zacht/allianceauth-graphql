@@ -26,13 +26,13 @@ class Query:
     rotation_entries = DjangoFilterPaginateListField(EntryType, pagination=LimitOffsetGraphqlPagination(), fields=['rotation_id'])
     search_rotation_characters = graphene.List(UserType, name=graphene.String(required=True))
 
-    @permission_required('allianceauth_pve.view_rotation')
     @login_required
+    @permission_required('allianceauth_pve.view_rotation')
     def resolve_rotation(self, info, id):
         return Rotation.objects.get(pk=id)
 
-    @permission_required('allianceauth_pve.view_rotation')
     @login_required
+    @permission_required('allianceauth_pve.view_rotation')
     def resolve_closed_rotations(self, info):
         return Rotation.objects.filter(is_closed=True).order_by('-closed_at')
 
@@ -46,13 +46,13 @@ class Query:
             .annotate(estimated_total=Sum('estimated_share_total'))\
             .annotate(actual_total=Sum('actual_share_total'))
 
-    @permission_required('allianceauth_pve.view_rotation')
     @login_required
+    @permission_required('allianceauth_pve.view_rotation')
     def resolve_active_rotations(self, info):
         return Rotation.objects.filter(is_closed=False).order_by('-priority')
 
-    @permission_required('allianceauth_pve.view_rotation')
     @login_required
+    @permission_required('allianceauth_pve.view_rotation')
     def resolve_search_rotation_characters(self, info, name):
         users_ids = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user')
         return User.objects.filter(
