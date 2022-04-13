@@ -30,6 +30,7 @@ class GroupStatusEnum(graphene.Enum):
 
 class GroupType(DjangoObjectType):
     status = graphene.Field(GroupStatusEnum)
+    num_members = graphene.Int()
 
     class Meta:
         model = Group
