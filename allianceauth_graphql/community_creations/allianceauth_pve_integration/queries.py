@@ -44,8 +44,7 @@ class Query:
             .values('user').order_by()\
             .annotate(helped_setups=Coalesce(Subquery(rotations[:1]), 0))\
             .annotate(estimated_total=Sum('estimated_share_total'))\
-            .annotate(actual_total=Sum('actual_share_total'))\
-            .first()
+            .annotate(actual_total=Sum('actual_share_total'))[0]
 
     @login_required
     @permission_required('allianceauth_pve.view_rotation')
