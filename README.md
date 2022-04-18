@@ -24,13 +24,13 @@ Install plugin
 
 1. `pip install allianceauth-graphql`.
 2. Add the following apps to the bottom of your `INSTALLED_APPS` in the local.py settings file:
-    ``` python
+    ```python
     'allianceauth_graphql',
     'graphene_django',
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     ```
 3. Add the following settings to your local.py file:
-    ``` python
+    ```python
     from datetime import timedelta
 
     # ...
@@ -58,7 +58,7 @@ Install plugin
 
    > It should looks something like this
 
-    ``` python
+    ```python
     from django.conf.urls import include, url
     from allianceauth import urls
 
@@ -74,7 +74,7 @@ Install plugin
 
    > After the edit:
     
-    ``` python
+    ```python
     from django.conf.urls import include, url
     from allianceauth import urls
     from allianceauth_graphql import urls as aa_gql_urls
