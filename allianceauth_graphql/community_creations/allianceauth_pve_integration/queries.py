@@ -3,14 +3,15 @@ from graphql_jwt.decorators import login_required, permission_required
 from graphene_django_extras import DjangoFilterPaginateListField, LimitOffsetGraphqlPagination
 
 from django.utils import timezone
-from django.db.models import Sum, Subquery, Q
-from django.db.models.functions import Coalesce
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 
 from allianceauth.authentication.models import CharacterOwnership
+from allianceauth.eveonline.models import EveCharacter
 
-from allianceauth_pve.models import Rotation, EntryCharacter
-from allianceauth_graphql.authentication.types import UserType
+from allianceauth_pve.models import Rotation
+from allianceauth_pve.actions import running_averages
+from allianceauth_graphql.eveonline.types import EveCharacterType
 
 from .types import RotationType, EntryType, RattingSummaryType
 
@@ -24,7 +25,7 @@ class Query:
     char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
     rotation_entries = DjangoFilterPaginateListField(EntryType, pagination=LimitOffsetGraphqlPagination(), fields=['rotation_id'])
-    search_rotation_characters = graphene.List(UserType, name=graphene.String(required=True))
+    search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(), exclude_characters_ids=graphene.List(graphene.Int))
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
@@ -38,13 +39,7 @@ class Query:
 
     @login_required
     def resolve_char_running_averages(self, info, start_date, end_date=timezone.now()):
-        user = info.context.user
-        rotations = Rotation.objects.filter(closed_at__range=(start_date, end_date)).get_setup_summary().filter(user=user).values('total_setups')
-        return EntryCharacter.objects.filter(entry__rotation__closed_at__range=(start_date, end_date), user=user)\
-            .values('user').order_by()\
-            .annotate(helped_setups=Coalesce(Subquery(rotations[:1]), 0))\
-            .annotate(estimated_total=Sum('estimated_share_total'))\
-            .annotate(actual_total=Sum('actual_share_total'))[0]
+        return running_averages(info.context.user, start_date, end_date)
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
@@ -53,11 +48,21 @@ class Query:
 
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
-    def resolve_search_rotation_characters(self, info, name):
-        users_ids = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user')
-        return User.objects.filter(
-            Q(groups__permissions__codename='view_rotation') |
-            Q(user_permissions__codename='view_rotation') |
-            Q(profile__state__permissions__codename='view_rotation'),
-            pk__in=users_ids
+    def resolve_search_rotation_characters(self, info, name=None, exclude_characters_ids=[]):
+        ratting_users = User.objects.filter(
+            Q(groups__permissions__codename='access_pve') |
+            Q(user_permissions__codename='access_pve') |
+            Q(profile__state__permissions__codename='access_pve'),
+            profile__main_character__isnull=False,
         )
+
+        ownerships = CharacterOwnership.objects.filter(user__in=ratting_users)
+        results = EveCharacter.objects.filter(pk__in=ownerships.values('character'))
+
+        if name:
+            results = results.filter(character_name__icontains=name)
+
+        if len(exclude_characters_ids) > 0:
+            results = results.exclude(pk__in=exclude_characters_ids)
+
+        return results
