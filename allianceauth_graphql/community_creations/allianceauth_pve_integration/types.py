@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from allianceauth.services.hooks import get_extension_logger
 
-from allianceauth_pve.models import Rotation, EntryCharacter, Entry
+from allianceauth_pve.models import Rotation, EntryCharacter, Entry, EntryRole
 
 
 logger = get_extension_logger(__name__)
@@ -49,3 +49,8 @@ class RotationType(DjangoObjectType):
 
     def resolve_summary(self, info):
         return self.summary.order_by('-estimated_total')
+
+
+class EntryRoleType(DjangoObjectType):
+    class Meta:
+        model = EntryRole
