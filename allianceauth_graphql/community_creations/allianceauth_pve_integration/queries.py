@@ -27,12 +27,12 @@ class Query:
     search_rotation_characters = graphene.List(UserType, name=graphene.String(required=True))
 
     @login_required
-    @permission_required('allianceauth_pve.view_rotation')
+    @permission_required('allianceauth_pve.access_pve')
     def resolve_rotation(self, info, id):
         return Rotation.objects.get(pk=id)
 
     @login_required
-    @permission_required('allianceauth_pve.view_rotation')
+    @permission_required('allianceauth_pve.access_pve')
     def resolve_closed_rotations(self, info):
         return Rotation.objects.filter(is_closed=True).order_by('-closed_at')
 
@@ -47,12 +47,12 @@ class Query:
             .annotate(actual_total=Sum('actual_share_total'))[0]
 
     @login_required
-    @permission_required('allianceauth_pve.view_rotation')
+    @permission_required('allianceauth_pve.access_pve')
     def resolve_active_rotations(self, info):
         return Rotation.objects.filter(is_closed=False).order_by('-priority')
 
     @login_required
-    @permission_required('allianceauth_pve.view_rotation')
+    @permission_required('allianceauth_pve.manage_entries')
     def resolve_search_rotation_characters(self, info, name):
         users_ids = CharacterOwnership.objects.filter(character__character_name__icontains=name).values('user')
         return User.objects.filter(
