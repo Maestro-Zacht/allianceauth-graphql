@@ -27,9 +27,10 @@ class CreateRattingEntry(graphene.Mutation):
     entry = graphene.Field(EntryType)
     errors = graphene.List(graphene.String)
 
+    @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
-    def mutate(root, info, input, rotation_id):
+    def mutate(cls, root, info, input, rotation_id):
         ok = True
         errors = []
 
@@ -103,22 +104,99 @@ class CreateRattingEntry(graphene.Mutation):
         else:
             entry = None
 
-        return CreateRattingEntry(ok=ok, errors=errors, entry=entry)
+        return cls(ok=ok, errors=errors, entry=entry)
 
 
 class ModifyRattingEntry(graphene.Mutation):
     ok = graphene.Boolean()
-    rotation = graphene.Field(RotationType)
+    entry = graphene.Field(EntryType)
+    errors = graphene.List(graphene.String)
 
     class Arguments:
         input = EntryInput(required=True)
-        entry_id = graphene.ID(required=True)
+        entry_id = graphene.Int(required=True)
 
+    @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
-    def mutate(root, info, input, entry_id):
-        entry = EntryService.edit_entry(info.context.user, entry_id, input.estimated_total, input.shares)
-        return ModifyRattingEntry(ok=True, rotation=entry.rotation)
+    def mutate(cls, root, info, input, entry_id):
+        ok = True
+        errors = []
+        user = info.context.user
+        entry = Entry.objects.get(pk=entry_id)
+
+        # input checks
+
+        roles = set()
+        for new_role in input.roles:
+            if new_role['name'] in roles:
+                ok = False
+                errors.append(f"{new_role['name']} name is not unique")
+            else:
+                roles.add(new_role['name'])
+
+        characters_ids = set()
+        for new_share in input.shares:
+            if new_share['character_id'] in characters_ids:
+                ok = False
+                errors.append(f"character {new_share['character_id']} cannot have more than 1 share")
+            else:
+                characters_ids.add(new_share['character_id'])
+
+            if new_share['role'] not in roles:
+                ok = False
+                errors.append(f"{new_share['role']} is not a valid role")
+
+            if not CharacterOwnership.objects.filter(user_id=new_share['user_id'], character_id=new_share['character_id']).exists():
+                ok = False
+                errors.append("character ownership doesn't match")
+
+        if user != entry.created_by and not user.is_superuser:
+            ok = False
+            errors.append('You cannot edit this entry')
+
+        if ok:
+            with transaction.atomic():
+                entry.ratting_shares.all().delete()
+                entry.roles.all().delete()
+                entry.estimated_total = input['estimated_total']
+                entry.save()
+
+                to_add = []
+
+                for new_role in input.roles:
+                    to_add.append(EntryRole(
+                        entry=entry,
+                        name=new_role['name'],
+                        value=new_role['value']
+                    ))
+
+                EntryRole.objects.bulk_create(to_add)
+                to_add.clear()
+
+                setups = set()
+
+                for new_share in input.shares:
+                    role = entry.roles.get(name=new_share['role'])
+
+                    setup = new_share['helped_setup'] and new_share['user_id'] not in setups
+                    if setup:
+                        setups.add(new_share['user_id'])
+
+                    to_add.append(EntryCharacter(
+                        entry=entry,
+                        role=role,
+                        user_character_id=new_share['character_id'],
+                        user_id=new_share['user_id'],
+                        site_count=new_share['site_count'],
+                        helped_setup=setup,
+                    ))
+
+                EntryCharacter.objects.bulk_create(to_add)
+
+                entry.update_share_totals()
+
+        return cls(ok=ok, errors=errors, entry=entry)
 
 
 class DeleteRattingEntry(graphene.Mutation):
@@ -126,13 +204,16 @@ class DeleteRattingEntry(graphene.Mutation):
     rotation = graphene.Field(RotationType)
 
     class Arguments:
-        entry_id = graphene.ID(required=True)
+        entry_id = graphene.Int(required=True)
 
+    @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
-    def mutate(root, info, entry_id):
-        rotation = EntryService.delete_entry(info.context.user, entry_id)
-        return DeleteRattingEntry(ok=True, rotation=rotation)
+    def mutate(cls, root, info, entry_id):
+        user = info.context.user
+        entry = Entry.objects.select_related('rotation').get(pk=entry_id)
+        rotation = entry.rotation
+        return cls(ok=True, rotation=rotation)
 
 
 class CreateRotation(graphene.Mutation):
@@ -142,16 +223,17 @@ class CreateRotation(graphene.Mutation):
     class Arguments:
         input = CreateRotationInput(required=True)
 
+    @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
-    def mutate(root, info, input):
+    def mutate(cls, root, info, input):
         rotation = Rotation.objects.create(
             name=input.name,
             tax_rate=input.tax_rate,
             priority=input.priority if input.priority else 0,
         )
 
-        return CreateRotation(ok=True, rotation=rotation)
+        return cls(ok=True, rotation=rotation)
 
 
 class CloseRotation(graphene.Mutation):
@@ -160,9 +242,10 @@ class CloseRotation(graphene.Mutation):
     class Arguments:
         input = RotationCloseInput(required=True)
 
+    @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
-    def mutate(root, info, input):
+    def mutate(cls, root, info, input):
         user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)
 
@@ -177,7 +260,7 @@ class CloseRotation(graphene.Mutation):
         for entry in rotation.entries.all():
             entry.update_share_totals()
 
-        return CloseRotation(ok=True)
+        return cls(ok=True)
 
 
 class Mutation:
