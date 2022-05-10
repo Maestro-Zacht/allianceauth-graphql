@@ -213,7 +213,14 @@ class DeleteRattingEntry(graphene.Mutation):
         user = info.context.user
         entry = Entry.objects.select_related('rotation').get(pk=entry_id)
         rotation = entry.rotation
-        return cls(ok=True, rotation=rotation)
+
+        if user != entry.created_by and not user.is_superuser:
+            ok = False
+        else:
+            ok = True
+            entry.delete()
+
+        return cls(ok=ok, rotation=rotation)
 
 
 class CreateRotation(graphene.Mutation):
