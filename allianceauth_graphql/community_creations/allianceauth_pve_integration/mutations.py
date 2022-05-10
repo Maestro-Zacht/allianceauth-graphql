@@ -5,12 +5,17 @@ from graphql_jwt.decorators import login_required, permission_required
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
+from django.db import transaction
 
-from allianceauth_pve.actions import EntryService
-from allianceauth_pve.models import Rotation
+from allianceauth.services.hooks import get_extension_logger
+from allianceauth.authentication.models import CharacterOwnership
+
+from allianceauth_pve.models import Rotation, Entry, EntryRole, EntryCharacter
 
 from .inputs import EntryInput, CreateRotationInput, RotationCloseInput
 from .types import RotationType, EntryType
+
+logger = get_extension_logger(__name__)
 
 
 class CreateRattingEntry(graphene.Mutation):
@@ -19,13 +24,84 @@ class CreateRattingEntry(graphene.Mutation):
         rotation_id = graphene.Int(required=True)
 
     ok = graphene.Boolean()
-    rotation = graphene.Field(RotationType)
+    entry = graphene.Field(EntryType)
+    errors = graphene.List(graphene.String)
 
     @login_required
-    @permission_required('allianceauth_pve.add_entry')
+    @permission_required('allianceauth_pve.manage_entries')
     def mutate(root, info, input, rotation_id):
-        entry = EntryService.create_entry(info.context.user, rotation_id, input.estimated_total, input.shares)
-        return CreateRattingEntry(ok=True, rotation=entry.rotation)
+        ok = True
+        errors = []
+
+        # input checks
+
+        roles = set()
+        for new_role in input.roles:
+            if new_role['name'] in roles:
+                ok = False
+                errors.append(f"{new_role['name']} name is not unique")
+            else:
+                roles.add(new_role['name'])
+
+        characters_ids = set()
+        for new_share in input.shares:
+            if new_share['character_id'] in characters_ids:
+                ok = False
+                errors.append(f"character {new_share['character_id']} cannot have more than 1 share")
+            else:
+                characters_ids.add(new_share['character_id'])
+
+            if new_share['role'] not in roles:
+                ok = False
+                errors.append(f"{new_share['role']} is not a valid role")
+
+            if not CharacterOwnership.objects.filter(user_id=new_share['user_id'], character_id=new_share['character_id']).exists():
+                ok = False
+                errors.append("character ownership doesn't match")
+
+        if ok:
+            with transaction.atomic():
+                entry = Entry.objects.create(
+                    rotation_id=rotation_id,
+                    estimated_total=input['estimated_total'],
+                    created_by=info.context.user
+                )
+
+                to_add = []
+
+                for new_role in input.roles:
+                    to_add.append(EntryRole(
+                        entry=entry,
+                        name=new_role['name'],
+                        value=new_role['value']
+                    ))
+
+                EntryRole.objects.bulk_create(to_add)
+                to_add.clear()
+
+                setups = set()
+
+                for new_share in input.shares:
+                    role = entry.roles.get(name=new_share['role'])
+
+                    setup = new_share['helped_setup'] and new_share['user_id'] not in setups
+                    if setup:
+                        setups.add(new_share['user_id'])
+
+                    to_add.append(EntryCharacter(
+                        entry=entry,
+                        role=role,
+                        user_character_id=new_share['character_id'],
+                        user_id=new_share['user_id'],
+                        site_count=new_share['site_count'],
+                        helped_setup=setup,
+                    ))
+
+                EntryCharacter.objects.bulk_create(to_add)
+
+                entry.update_share_totals()
+
+        return CreateRattingEntry(ok=ok, errors=errors)
 
 
 class ModifyRattingEntry(graphene.Mutation):
@@ -37,7 +113,7 @@ class ModifyRattingEntry(graphene.Mutation):
         entry_id = graphene.ID(required=True)
 
     @login_required
-    @permission_required('allianceauth_pve.change_entry')
+    @permission_required('allianceauth_pve.manage_entries')
     def mutate(root, info, input, entry_id):
         entry = EntryService.edit_entry(info.context.user, entry_id, input.estimated_total, input.shares)
         return ModifyRattingEntry(ok=True, rotation=entry.rotation)
@@ -51,7 +127,7 @@ class DeleteRattingEntry(graphene.Mutation):
         entry_id = graphene.ID(required=True)
 
     @login_required
-    @permission_required('allianceauth_pve.delete_entry')
+    @permission_required('allianceauth_pve.manage_entries')
     def mutate(root, info, entry_id):
         rotation = EntryService.delete_entry(info.context.user, entry_id)
         return DeleteRattingEntry(ok=True, rotation=rotation)
@@ -65,7 +141,7 @@ class CreateRotation(graphene.Mutation):
         input = CreateRotationInput(required=True)
 
     @login_required
-    @permission_required('allianceauth_pve.add_rotation')
+    @permission_required('allianceauth_pve.manage_rotations')
     def mutate(root, info, input):
         rotation = Rotation.objects.create(
             name=input.name,
@@ -83,7 +159,7 @@ class CloseRotation(graphene.Mutation):
         input = RotationCloseInput(required=True)
 
     @login_required
-    @permission_required('allianceauth_pve.close_rotation')
+    @permission_required('allianceauth_pve.manage_rotations')
     def mutate(root, info, input):
         user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)

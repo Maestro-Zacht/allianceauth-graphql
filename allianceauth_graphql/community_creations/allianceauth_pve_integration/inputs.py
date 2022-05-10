@@ -7,7 +7,7 @@ class EntryRoleInput(graphene.InputObjectType):
 
 
 class EntryCharacterInput(graphene.InputObjectType):
-    share_count = graphene.Int(required=True)
+    site_count = graphene.Int(required=True)
     user_id = graphene.Int(required=True)
     character_id = graphene.Int(required=True)
     helped_setup = graphene.Boolean(default_value=False)
