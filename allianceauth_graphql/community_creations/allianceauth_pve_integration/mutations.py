@@ -100,8 +100,10 @@ class CreateRattingEntry(graphene.Mutation):
                 EntryCharacter.objects.bulk_create(to_add)
 
                 entry.update_share_totals()
+        else:
+            entry = None
 
-        return CreateRattingEntry(ok=ok, errors=errors)
+        return CreateRattingEntry(ok=ok, errors=errors, entry=entry)
 
 
 class ModifyRattingEntry(graphene.Mutation):
