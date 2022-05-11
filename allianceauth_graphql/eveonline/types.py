@@ -1,5 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
+
 from allianceauth.eveonline.models import EveCharacter, EveFactionInfo, EveAllianceInfo, EveCorporationInfo
 
 

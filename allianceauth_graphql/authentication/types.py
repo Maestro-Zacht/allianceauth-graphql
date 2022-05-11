@@ -1,6 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
-from allianceauth.authentication.models import UserProfile, State
+from allianceauth.authentication.models import UserProfile, State, CharacterOwnership
 from django.contrib.auth.models import Group, User
 
 
@@ -18,7 +18,7 @@ class UserProfileType(DjangoObjectType):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile',)
+        fields = ('id', 'username', 'profile', 'character_ownerships',)
 
 
 class GroupStatusEnum(graphene.Enum):
@@ -35,6 +35,12 @@ class GroupType(DjangoObjectType):
     class Meta:
         model = Group
         fields = ('name', 'authgroup', 'id',)
+
+
+class CharacterOwnershipType(DjangoObjectType):
+    class Meta:
+        model = CharacterOwnership
+        fields = ('character', 'user',)
 
 
 class LoginStatus(graphene.Enum):

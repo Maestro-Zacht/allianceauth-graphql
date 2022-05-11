@@ -13,13 +13,16 @@ User = get_user_model()
 
 
 class RattingSummaryType(graphene.ObjectType):
-    character = graphene.Field('allianceauth_graphql.eveonline.types.EveCharacterType')
+    main_character = graphene.Field('allianceauth_graphql.eveonline.types.EveCharacterType')
     helped_setups = graphene.Int()
     estimated_total = graphene.Float()
     actual_total = graphene.Float()
 
     def resolve_character(self, info):
-        return User.objects.get(pk=self['user']).profile.main_character
+        try:
+            return User.objects.get(pk=self['user']).profile.main_character
+        except:
+            return None
 
 
 class EntryCharacterType(DjangoObjectType):
