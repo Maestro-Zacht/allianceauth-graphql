@@ -1,5 +1,6 @@
 import datetime
 import graphene
+from graphene_django.forms.mutation import DjangoModelFormMutation
 from graphql_jwt.decorators import login_required, permission_required
 
 from django.utils import timezone
@@ -11,6 +12,7 @@ from allianceauth.services.hooks import get_extension_logger
 from allianceauth.authentication.models import CharacterOwnership
 
 from allianceauth_pve.models import Rotation, Entry, EntryRole, EntryCharacter
+from allianceauth_pve.forms import NewRotationForm
 
 from .inputs import EntryInput, CreateRotationInput, RotationCloseInput
 from .types import RotationType, EntryType
@@ -223,24 +225,17 @@ class DeleteRattingEntry(graphene.Mutation):
         return cls(ok=ok, rotation=rotation)
 
 
-class CreateRotation(graphene.Mutation):
-    ok = graphene.Boolean()
+class CreateRotation(DjangoModelFormMutation):
     rotation = graphene.Field(RotationType)
 
-    class Arguments:
-        input = CreateRotationInput(required=True)
+    class Meta:
+        form_class = NewRotationForm
 
     @classmethod
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
-    def mutate(cls, root, info, input):
-        rotation = Rotation.objects.create(
-            name=input.name,
-            tax_rate=input.tax_rate,
-            priority=input.priority if input.priority else 0,
-        )
-
-        return cls(ok=True, rotation=rotation)
+    def perform_mutate(cls, form, info):
+        return super().perform_mutate(form, info)
 
 
 class CloseRotation(graphene.Mutation):
@@ -253,21 +248,23 @@ class CloseRotation(graphene.Mutation):
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
     def mutate(cls, root, info, input):
-        user = info.context.user
         rotation = Rotation.objects.get(pk=input.rotation_id)
 
         if rotation.is_closed:
-            raise Exception('Rotation is closed and can not be modified')
+            ok = False
+        else:
+            with transaction.atomic():
+                rotation.actual_total = input.sales_value
+                rotation.is_closed = True
+                rotation.closed_at = timezone.now()
+                rotation.save()
 
-        rotation.actual_total = input.sales_value
-        rotation.is_closed = True
-        rotation.closed_at = timezone.now()
-        rotation.save()
+                for entry in rotation.entries.all():
+                    entry.update_share_totals()
 
-        for entry in rotation.entries.all():
-            entry.update_share_totals()
+            ok = True
 
-        return cls(ok=True)
+        return cls(ok=ok)
 
 
 class Mutation:
