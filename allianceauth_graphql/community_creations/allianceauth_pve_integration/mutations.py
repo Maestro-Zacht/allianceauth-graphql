@@ -1,20 +1,16 @@
-import datetime
 import graphene
 from graphene_django.forms.mutation import DjangoModelFormMutation
 from graphql_jwt.decorators import login_required, permission_required
 
 from django.utils import timezone
-from django.contrib.auth import get_user_model
-from django.db.models import Sum
 from django.db import transaction
 
 from allianceauth.services.hooks import get_extension_logger
-from allianceauth.authentication.models import CharacterOwnership
 
 from allianceauth_pve.models import Rotation, Entry, EntryRole, EntryCharacter
 from allianceauth_pve.forms import NewRotationForm
 
-from .inputs import EntryInput, CreateRotationInput, RotationCloseInput
+from .inputs import EntryInput, RotationCloseInput
 from .types import RotationType, EntryType
 
 logger = get_extension_logger(__name__)
@@ -33,34 +29,8 @@ class CreateRattingEntry(graphene.Mutation):
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
     def mutate(cls, root, info, input, rotation_id):
-        ok = True
-        errors = []
-
-        # input checks
-
-        roles = set()
-        for new_role in input.roles:
-            if new_role['name'] in roles:
-                ok = False
-                errors.append(f"{new_role['name']} name is not unique")
-            else:
-                roles.add(new_role['name'])
-
-        characters_ids = set()
-        for new_share in input.shares:
-            if new_share['character_id'] in characters_ids:
-                ok = False
-                errors.append(f"character {new_share['character_id']} cannot have more than 1 share")
-            else:
-                characters_ids.add(new_share['character_id'])
-
-            if new_share['role'] not in roles:
-                ok = False
-                errors.append(f"{new_share['role']} is not a valid role")
-
-            if not CharacterOwnership.objects.filter(user_id=new_share['user_id'], character_id=new_share['character_id']).exists():
-                ok = False
-                errors.append("character ownership doesn't match")
+        errors = EntryInput.is_valid(input)
+        ok = len(errors) == 0
 
         if ok:
             with transaction.atomic():
@@ -122,36 +92,10 @@ class ModifyRattingEntry(graphene.Mutation):
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
     def mutate(cls, root, info, input, entry_id):
-        ok = True
-        errors = []
+        errors = EntryInput.is_valid(input)
+        ok = len(errors) == 0
         user = info.context.user
         entry = Entry.objects.get(pk=entry_id)
-
-        # input checks
-
-        roles = set()
-        for new_role in input.roles:
-            if new_role['name'] in roles:
-                ok = False
-                errors.append(f"{new_role['name']} name is not unique")
-            else:
-                roles.add(new_role['name'])
-
-        characters_ids = set()
-        for new_share in input.shares:
-            if new_share['character_id'] in characters_ids:
-                ok = False
-                errors.append(f"character {new_share['character_id']} cannot have more than 1 share")
-            else:
-                characters_ids.add(new_share['character_id'])
-
-            if new_share['role'] not in roles:
-                ok = False
-                errors.append(f"{new_share['role']} is not a valid role")
-
-            if not CharacterOwnership.objects.filter(user_id=new_share['user_id'], character_id=new_share['character_id']).exists():
-                ok = False
-                errors.append("character ownership doesn't match")
 
         if user != entry.created_by and not user.is_superuser:
             ok = False
