@@ -98,7 +98,7 @@ Community Creations Integration
 -------------------------------
 
 Currently the package supports the integration with the following community packages:
-* allianceauth-pve
+* allianceauth-pve v1.1.x
 
 To install the dependencies needed, run `pip install allianceauth-graphql[package1,package2]` for all the packages you want to integrate.
 
