@@ -25,5 +25,10 @@ class EveCharacterType(DjangoObjectType):
     corporation = graphene.Field(EveCorporationInfoType, required=True)
     faction = graphene.Field(EveFactionInfoType)
 
+    zkillboard = graphene.String(required=True)
+
     class Meta:
         model = EveCharacter
+
+    def resolve_zkillboard(self, info):
+        return f"https://zkillboard.com/character/{self.character_id}/"
