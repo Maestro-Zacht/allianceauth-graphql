@@ -1,7 +1,10 @@
 import graphene
 import importlib
 from django.conf import settings
+
 from allianceauth.services.hooks import get_extension_logger
+
+from allianceauth_graphql.esi import Query as esi_query, Mutation as esi_mutation
 
 logger = get_extension_logger(__name__)
 
@@ -31,10 +34,10 @@ def create_schema() -> graphene.Schema:
                 queries.append(module.Query)
                 mutations.append(module.Mutation)
 
-    class Query(*queries, graphene.ObjectType):
+    class Query(*queries, esi_query, graphene.ObjectType):
         pass
 
-    class Mutation(*mutations, graphene.ObjectType):
+    class Mutation(*mutations, esi_mutation, graphene.ObjectType):
         pass
 
     return graphene.Schema(query=Query, mutation=Mutation)
