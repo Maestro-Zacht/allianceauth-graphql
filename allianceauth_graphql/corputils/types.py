@@ -16,10 +16,13 @@ class CorpMemberType(DjangoObjectType):
 
     class Meta:
         model = CorpMember
-        fields = ('corpstats',)
+        fields = ('corpstats', 'character_id', 'character_name',)
 
     def resolve_character(self, info):
-        return EveCharacter.objects.get(character_id=self.character_id)
+        try:
+            return EveCharacter.objects.get(character_id=self.character_id)
+        except EveCharacter.DoesNotExist:
+            return None
 
 
 class CorpStatsType(DjangoObjectType):
