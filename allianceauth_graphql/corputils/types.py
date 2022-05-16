@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from allianceauth.corputils.models import CorpStats
 from allianceauth.eveonline.models import EveCharacter
@@ -37,4 +38,4 @@ class CorpStatsType(DjangoObjectType):
 
     def resolve_mains(self, info):
         main_ids = User.objects.values('profile__main_character__character_id')
-        return EveCharacter.objects.filter(character_id__in=self.members.values('character_id'), character_id__in=main_ids)
+        return EveCharacter.objects.filter(Q(character_id__in=self.members.values('character_id')) & Q(character_id__in=main_ids))
