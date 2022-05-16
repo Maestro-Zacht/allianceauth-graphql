@@ -1,7 +1,6 @@
 import graphene
 from graphql_jwt.decorators import login_required, user_passes_test, permission_required
 
-from bravado.exception import HTTPError
 from allianceauth.corputils.views import access_corpstats_test, SWAGGER_SPEC_PATH
 from allianceauth.corputils.models import CorpStats
 from allianceauth.eveonline.models import EveCharacter, EveCorporationInfo
@@ -42,6 +41,22 @@ class AddCorpStatsMutation(graphene.Mutation):
         cs.update()
         assert cs.pk  # ensure update was successful
 
+        return cls(ok=True)
+
+
+class UpdateCorpStatsMutation(graphene.Mutation):
+    class Arguments:
+        corp_id = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+
+    @classmethod
+    @login_required
+    @user_passes_test(access_corpstats_test)
+    def mutate(cls, root, info, corp_id):
+        corp = EveCorporationInfo.objects.get(corporation_id=corp_id)
+        corpstats = CorpStats.objects.get(corp=corp)
+        corpstats.update()
         return cls(ok=True)
 
 
