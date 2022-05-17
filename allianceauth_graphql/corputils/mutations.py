@@ -5,7 +5,7 @@ from allianceauth.corputils.views import access_corpstats_test, SWAGGER_SPEC_PAT
 from allianceauth.corputils.models import CorpStats
 from allianceauth.eveonline.models import EveCharacter, EveCorporationInfo
 
-from allianceauth_graphql.decorators import tokens_required
+from ..decorators import tokens_required
 
 from esi.models import Token
 
