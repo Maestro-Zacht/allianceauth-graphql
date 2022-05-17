@@ -19,7 +19,7 @@ class TokenType(DjangoObjectType):
 
     class Meta:
         model = Token
-        fields = ('id', 'user', 'token_type', 'scopes',)
+        fields = ('id', 'user', 'scopes',)
 
     def resolve_character(self, info):
         return EveCharacter.objects.get(character_id=self.character_id)
