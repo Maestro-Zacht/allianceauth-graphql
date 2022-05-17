@@ -15,6 +15,11 @@ class EveAllianceInfoType(DjangoObjectType):
 
 
 class EveCorporationInfoType(DjangoObjectType):
+    logo_url_32 = graphene.String(required=True)
+    logo_url_64 = graphene.String(required=True)
+    logo_url_128 = graphene.String(required=True)
+    logo_url_256 = graphene.String(required=True)
+
     class Meta:
         model = EveCorporationInfo
 
