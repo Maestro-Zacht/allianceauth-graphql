@@ -115,6 +115,24 @@ class CreateFatlink(DjangoFormMutation):
         return cls(ok=ok, errors=errors, fatlink=fatlink if ok else None)
 
 
+class RemoveCharFatlink(graphene.Mutation):
+    class Arguments:
+        fat_hash = graphene.String(required=True)
+        character_id = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+    fatlink = graphene.Field(FatlinkType)
+
+    @classmethod
+    @login_required
+    @permission_required('auth.fleetactivitytracking')
+    def mutate(cls, root, info, fat_hash, character_id):
+        fatlink = Fatlink.objects.get(hash=fat_hash)
+        Fat.objects.filter(fatlink=fatlink, character__character_id=character_id).delete()
+        return cls(ok=True, fatlink=fatlink)
+
+
 class Mutation:
     fat_partecipate_to_fatlink = AddFatParticipation.Field()
     fat_create_fatlink = CreateFatlink.Field()
+    fat_remove_char_fat = RemoveCharFatlink.Field()
