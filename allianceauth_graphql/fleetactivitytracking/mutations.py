@@ -132,7 +132,22 @@ class RemoveCharFatlink(graphene.Mutation):
         return cls(ok=True, fatlink=fatlink)
 
 
+class DeleteFatlink(graphene.Mutation):
+    class Arguments:
+        fat_hash = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+
+    @classmethod
+    @login_required
+    @permission_required('auth.fleetactivitytracking')
+    def mutate(cls, root, info, fat_hash):
+        Fatlink.objects.get(hash=fat_hash).delete()
+        return cls(ok=True)
+
+
 class Mutation:
     fat_partecipate_to_fatlink = AddFatParticipation.Field()
     fat_create_fatlink = CreateFatlink.Field()
     fat_remove_char_fat = RemoveCharFatlink.Field()
+    fat_delete_fatlink = DeleteFatlink.Field()
