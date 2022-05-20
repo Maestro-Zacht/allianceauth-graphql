@@ -100,7 +100,7 @@ class Query:
             .annotate(month=ExtractMonth('fatlink__fatdatetime'))\
             .annotate(year=ExtractYear('fatlink__fatdatetime'))\
             .values('month', 'year')\
-            .annotate(num_fats=Count('pk'))\
+            .annotate(num_fats=Count('*'))\
             .order_by('-year', '-month')
 
     @login_required
@@ -110,9 +110,10 @@ class Query:
         else:
             user = info.context.user
 
+        # my optimized code
         personal_fats = Fat.objects.filter(user=user, fatlink__fatdatetime__year=year, fatlink__fatdatetime__month=month)\
             .values('shiptype')\
-            .annotate(times_used=Count('pk'))\
+            .annotate(times_used=Count('*'))\
             .order_by('shiptype')
 
         created_fats = Fatlink.objects.filter(creator=user, fatdatetime__year=year, fatdatetime__month=month)

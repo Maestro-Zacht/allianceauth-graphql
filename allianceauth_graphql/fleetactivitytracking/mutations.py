@@ -1,17 +1,21 @@
 import datetime
 
 import graphene
-from graphql_jwt.decorators import login_required
+from graphql_jwt.decorators import login_required, permission_required
+from graphene_django.forms.mutation import DjangoFormMutation
 
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.utils.crypto import get_random_string
 
 from allianceauth.fleetactivitytracking.models import Fatlink, Fat
 from allianceauth.fleetactivitytracking.views import SWAGGER_SPEC_PATH
+from allianceauth.fleetactivitytracking.forms import FatlinkForm
 from allianceauth.eveonline.models import EveCharacter
 from allianceauth.eveonline.providers import provider
 from esi.models import Token
 
+from .types import FatlinkType
 from ..decorators import tokens_required
 
 
@@ -75,6 +79,42 @@ class AddFatParticipation(graphene.Mutation):
             ok = False
             error = "FAT link has expired or user not valid"
 
+        return cls(ok=ok, error=error)
+
+
+class CreateFatlink(DjangoFormMutation):
+    class Meta:
+        form_class = FatlinkForm
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    fatlink = graphene.Field(FatlinkType)
+
+    @classmethod
+    @login_required
+    @permission_required('auth.fleetactivitytracking')
+    def perform_mutate(cls, form, info):
+        fatlink = Fatlink()
+        fatlink.fleet = form.cleaned_data["fleet"]
+        fatlink.duration = form.cleaned_data["duration"]
+        fatlink.fatdatetime = timezone.now()
+        fatlink.creator = info.context.user
+        fatlink.hash = get_random_string(length=15)
+        try:
+            fatlink.full_clean()
+            fatlink.save()
+            ok = True
+            errors = []
+        except ValidationError as e:
+            form = FatlinkForm()
+            errors = []
+            for errorname, message in e.message_dict.items():
+                errors.append(message[0].decode())
+            ok = False
+
+        return cls(ok=ok, errors=errors, fatlink=fatlink if ok else None)
+
 
 class Mutation:
-    pass
+    fat_partecipate_to_fatlink = AddFatParticipation.Field()
+    fat_create_fatlink = CreateFatlink.Field()
