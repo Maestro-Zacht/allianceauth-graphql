@@ -11,6 +11,8 @@ class StateType(DjangoObjectType):
 
 
 class UserProfileType(DjangoObjectType):
+    state = graphene.Field(StateType, required=True)
+
     class Meta:
         model = UserProfile
 

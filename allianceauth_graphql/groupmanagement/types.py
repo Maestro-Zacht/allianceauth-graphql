@@ -5,6 +5,8 @@ from allianceauth.groupmanagement.models import GroupRequest, AuthGroup, Request
 
 
 class AuthGroupType(DjangoObjectType):
+    group = graphene.Field('allianceauth_graphql.authentication.types.GroupType', required=True)
+
     class Meta:
         model = AuthGroup
         fields = ('group', 'description',)
@@ -27,6 +29,8 @@ class GroupRequestLeaveStatus(graphene.Enum):
 
 
 class GroupRequestType(DjangoObjectType):
+    group = graphene.Field('allianceauth_graphql.authentication.types.GroupType', required=True)
+
     class Meta:
         model = GroupRequest
 
@@ -62,6 +66,7 @@ class RequestLogType(DjangoObjectType):
     request_type = graphene.Field(GroupRequestLogType)
     requestor = graphene.Field('allianceauth_graphql.authentication.types.UserType')
     action = graphene.Field(GroupRequestLogActionType)
+    group = graphene.Field('allianceauth_graphql.authentication.types.GroupType', required=True)
 
     class Meta:
         model = RequestLog
