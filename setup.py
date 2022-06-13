@@ -8,7 +8,7 @@ with open('README.md') as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    'allianceauth>=2.11.2,<4.0.0',
+    'allianceauth>=2.11.2,<3.0.0',
     'graphene-django>=2.13,<3.0.0',
     'django-graphql-jwt>=0.3.0,<0.4.0',
     # 'django-cors-headers>=3.7,<4.0.0',
