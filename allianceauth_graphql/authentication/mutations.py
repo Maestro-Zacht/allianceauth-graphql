@@ -40,7 +40,7 @@ class EsiTokenAuthMutation(graphene.Mutation):
         errors = []
         token_obj = Token.objects.create_from_code(sso_token)
         user = authenticate(token=token_obj)
-        status = 0
+        status = LoginStatus.ERROR
 
         if user:
             token_obj.user = user
@@ -50,9 +50,9 @@ class EsiTokenAuthMutation(graphene.Mutation):
                 token_obj.save()
 
             if user.is_active:
-                status = 1
+                status = LoginStatus.LOGGED_IN
             elif not user.email:
-                status = 2
+                status = LoginStatus.REGISTRATION
                 info.context.session.update({'registration_uid': user.pk})
                 info.context.session.save()
             else:
@@ -61,17 +61,17 @@ class EsiTokenAuthMutation(graphene.Mutation):
         else:
             errors.append('Unable to authenticate the selected character')
 
-        if status == 1:
+        if status == LoginStatus.LOGGED_IN:
             token = get_token(user)
             refresh_token = create_refresh_token(user).get_token()
-        elif status == 2:
+        elif status == LoginStatus.REGISTRATION:
             refresh_token = None
             token = signing.dumps(user.pk)
         else:
             token = refresh_token = None
 
         return cls(
-            me=user if status == 1 else None,
+            me=user if status == LoginStatus.LOGGED_IN else None,
             token=token,
             refresh_token=refresh_token,
             errors=errors,
