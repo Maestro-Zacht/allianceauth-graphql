@@ -13,6 +13,11 @@ Free software: GNU General Public License v3
 
 This version is in alpha, please open an issue if you face any bug.
 
+Compatibility
+=============
+
+Versions `>=0.16` are only compatible with AllianceAuth v3.
+
 Setup
 =====
 
