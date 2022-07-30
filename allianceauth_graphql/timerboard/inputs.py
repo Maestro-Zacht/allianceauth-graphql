@@ -4,7 +4,7 @@ import graphene
 class TimerInput(graphene.InputObjectType):
     details = graphene.String(required=True)
     system = graphene.String(required=True)
-    planet_moon = graphene.String(required=False)
+    planet_moon = graphene.String(default_value="")
     structure = graphene.Field('allianceauth_graphql.timerboard.types.TimerStructureChoices', required=True)
     timer_type = graphene.Field('allianceauth_graphql.timerboard.types.TimerTypeChoices', required=True)
     objective = graphene.Field('allianceauth_graphql.timerboard.types.TimerObjectiveChoices', required=True)
