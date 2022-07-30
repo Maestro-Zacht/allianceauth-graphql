@@ -74,18 +74,18 @@ class RequestLogType(DjangoObjectType):
 
     def resolve_request_type(self, info):
         if self.request_type is None:
-            return 1
+            return GroupRequestLogType.REMOVED
         elif self.request_type is True:
-            return 2
+            return GroupRequestLogType.LEAVE
         elif self.request_type is False:
-            return 3
+            return GroupRequestLogType.JOIN
 
     def resolve_action(self, info):
         if self.request_type is not None:
             if self.action is True:
-                return "Accept"
+                return GroupRequestLogActionType.ACCEPT
             elif self.action is False:
-                return "Reject"
+                return GroupRequestLogActionType.REJECT
 
 
 class GroupMembershipAuditType(graphene.ObjectType):
