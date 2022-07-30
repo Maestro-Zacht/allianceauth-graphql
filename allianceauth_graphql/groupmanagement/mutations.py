@@ -33,15 +33,15 @@ class AddGroupRequest(graphene.Mutation):
 
         if not GroupManager.joinable_group(group, user.profile.state):
             logger.warning(f"User {user} attempted to join group id {group_id} but it is not a joinable group")
-            status = 1
+            status = GroupRequestAddStatus.CANNOT_JOIN
             ok = False
         elif group in user.groups.all():
             logger.warning(f"User {user} attempted to join group id {group_id} but they are already a member.")
-            status = 2
+            status = GroupRequestAddStatus.ALREADY_MEMBER
             ok = False
         elif not user.has_perm('groupmanagement.request_groups') and not group.authgroup.public:
             logger.warning(f"User {user} attempted to join group id {group_id} but it is not a public group")
-            status = 1
+            status = GroupRequestAddStatus.CANNOT_JOIN
             ok = False
         elif group.authgroup.open:
             logger.info(f"{user} joining {group} as is an open group")
@@ -50,11 +50,11 @@ class AddGroupRequest(graphene.Mutation):
             log = RequestLog(request_type=False, group=group, request_info=request_info, action=1, request_actor=user)
             log.save()
 
-            status = 3
+            status = GroupRequestAddStatus.JOINED
             ok = True
         elif GroupRequest.objects.filter(user=user, group=group).exists():
             logger.info(f"{user} attempted to join {group} but already has an open application")
-            status = 2
+            status = GroupRequestAddStatus.ALREADY_MEMBER
             ok = False
         else:
             grouprequest = GroupRequest()
@@ -65,7 +65,7 @@ class AddGroupRequest(graphene.Mutation):
             logger.info(f"Created group request for user {user} to group {group}")
             grouprequest.notify_leaders()
 
-            status = 5
+            status = GroupRequestAddStatus.APPLIED
             ok = True
 
         return cls(ok=ok, status=status)
@@ -87,11 +87,11 @@ class LeaveGroupRequest(graphene.Mutation):
 
         if not GroupManager.check_internal_group(group):
             logger.warning(f"User {user} attempted to leave group id {group_id} but it is not a joinable group")
-            status = 1
+            status = GroupRequestLeaveStatus.CANNOT_LEAVE
             ok = False
         elif group not in user.groups.all():
             logger.debug(f"User {user} attempted to leave group id {group_id} but they are not a member")
-            status = 2
+            status = GroupRequestLeaveStatus.NOT_MEMBER
             ok = False
         elif group.authgroup.open:
             logger.info(f"{user} leaving {group} as is an open group")
@@ -100,11 +100,11 @@ class LeaveGroupRequest(graphene.Mutation):
             log.save()
             user.groups.remove(group)
 
-            status = 3
+            status = GroupRequestLeaveStatus.LEFT
             ok = True
         elif GroupRequest.objects.filter(user=user, group=group):
             logger.info(f"{user} attempted to leave {group} but already has an pending leave request.")
-            status = 4
+            status = GroupRequestLeaveStatus.PENDING_LEAVE_REQUEST
             ok = False
         elif getattr(settings, 'GROUPMANAGEMENT_AUTO_LEAVE', False):
             logger.info(f"{user} leaving joinable group {group} due to auto_leave")
@@ -121,7 +121,7 @@ class LeaveGroupRequest(graphene.Mutation):
             logger.info(f"Created group leave request for user {user} to group {group}")
             grouprequest.notify_leaders()
 
-            status = 5
+            status = GroupRequestLeaveStatus.CREATED_LEAVE_REQUEST
             ok = True
 
         return cls(ok=ok, status=status)

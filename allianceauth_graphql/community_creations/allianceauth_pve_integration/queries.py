@@ -1,6 +1,5 @@
 import graphene
 from graphql_jwt.decorators import login_required, permission_required
-from graphene_django_extras import DjangoFilterPaginateListField, LimitOffsetGraphqlPagination
 
 from django.utils import timezone
 from django.db.models import Q
@@ -24,7 +23,6 @@ class Query:
     closed_rotations = graphene.List(RotationType)
     char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
-    rotation_entries = DjangoFilterPaginateListField(EntryType, pagination=LimitOffsetGraphqlPagination(), fields=['rotation_id'])
     search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(), exclude_characters_ids=graphene.List(graphene.Int))
 
     @login_required

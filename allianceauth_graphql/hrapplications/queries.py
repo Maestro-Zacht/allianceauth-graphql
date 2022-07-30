@@ -50,9 +50,9 @@ class Query:
     def resolve_hr_personal_applications(self, info, status=None):
         res = info.context.user.applications.all()
         if status is not None:
-            if status == 1:
+            if status == ApplicationStatus.PENDING:
                 approved = None
-            elif status == 2:
+            elif status == ApplicationStatus.APPROVED:
                 approved = True
             else:
                 approved = False

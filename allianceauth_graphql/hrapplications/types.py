@@ -19,10 +19,10 @@ class ApplicationType(DjangoObjectType):
 
     def resolve_status(self, info):
         if self.approved is None:
-            return 1
+            return ApplicationStatus.PENDING
         if self.approved:
-            return 2
-        return 3
+            return ApplicationStatus.APPROVED
+        return ApplicationStatus.REJECTED
 
 
 class ApplicationAdminType(DjangoObjectType):
@@ -34,10 +34,10 @@ class ApplicationAdminType(DjangoObjectType):
 
     def resolve_status(self, info):
         if self.approved is None:
-            return 1
+            return ApplicationStatus.PENDING
         if self.approved:
-            return 2
-        return 3
+            return ApplicationStatus.APPROVED
+        return ApplicationStatus.REJECTED
 
 
 class ApplicationFormType(DjangoObjectType):
