@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from allianceauth.services.hooks import get_extension_logger
 
-from allianceauth_pve.models import Rotation, EntryCharacter, Entry, EntryRole
+from allianceauth_pve.models import Rotation, EntryCharacter, Entry, EntryRole, PveButton, RoleSetup, GeneralRole
 
 
 logger = get_extension_logger(__name__)
@@ -57,3 +57,18 @@ class RotationType(DjangoObjectType):
 class EntryRoleType(DjangoObjectType):
     class Meta:
         model = EntryRole
+
+
+class PveButtonType(DjangoObjectType):
+    class Meta:
+        model = PveButton
+
+
+class RoleSetupType(DjangoObjectType):
+    class Meta:
+        model = RoleSetup
+
+
+class GeneralRoleType(DjangoObjectType):
+    class Meta:
+        model = GeneralRole

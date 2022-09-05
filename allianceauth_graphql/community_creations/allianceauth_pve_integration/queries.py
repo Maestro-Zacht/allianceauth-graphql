@@ -8,11 +8,12 @@ from django.contrib.auth import get_user_model
 from allianceauth.authentication.models import CharacterOwnership
 from allianceauth.eveonline.models import EveCharacter
 
-from allianceauth_pve.models import Rotation
+
+from allianceauth_pve.models import Rotation, PveButton, RoleSetup
 from allianceauth_pve.actions import running_averages
 from allianceauth_graphql.eveonline.types import EveCharacterType
 
-from .types import RotationType, EntryType, RattingSummaryType
+from .types import RotationType, RoleSetupType, RattingSummaryType, PveButtonType
 
 
 User = get_user_model()
@@ -24,6 +25,8 @@ class Query:
     char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
     active_rotations = graphene.List(RotationType)
     search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(), exclude_characters_ids=graphene.List(graphene.Int))
+    roles_setups = graphene.List(RoleSetupType)
+    pve_buttons = graphene.List(PveButtonType)
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
@@ -64,3 +67,13 @@ class Query:
             results = results.exclude(pk__in=exclude_characters_ids)
 
         return results
+
+    @login_required
+    @permission_required('allianceauth_pve.manage_rotations')
+    def resolve_roles_setups(self, info):
+        return RoleSetup.objects.all()
+
+    @login_required
+    @permission_required('allianceauth_pve.manage_rotations')
+    def resolve_pve_buttons(self, info):
+        return PveButton.objects.all()
