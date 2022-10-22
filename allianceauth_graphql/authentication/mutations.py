@@ -53,8 +53,9 @@ class EsiTokenAuthMutation(graphene.Mutation):
                 status = LoginStatus.LOGGED_IN
             elif not user.email:
                 status = LoginStatus.REGISTRATION
-                info.context.session.update({'registration_uid': user.pk})
-                info.context.session.save()
+                if getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
+                    info.context.session.update({'registration_uid': user.pk})
+                    info.context.session.save()
             else:
                 errors.append('Unable to authenticate the selected character')
 
