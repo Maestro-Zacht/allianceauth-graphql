@@ -64,6 +64,10 @@ class EsiTokenAuthMutation(graphene.Mutation):
         if status == LoginStatus.LOGGED_IN:
             token = get_token(user)
             refresh_token = create_refresh_token(user).get_token()
+        elif status == LoginStatus.REGISTRATION and not getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
+            token = get_token(user)
+            refresh_token = create_refresh_token(user).get_token()
+            status = LoginStatus.LOGGED_IN
         elif status == LoginStatus.REGISTRATION:
             refresh_token = None
             token = signing.dumps(user.pk)
