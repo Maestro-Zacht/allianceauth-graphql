@@ -20,7 +20,7 @@ class RattingSummaryType(graphene.ObjectType):
 
     def resolve_main_character(self, info):
         try:
-            return User.objects.get(pk=self['user']).profile.main_character
+            return User.objects.select_related('profile__main_character').get(pk=self['user']).profile.main_character
         except:
             return None
 
