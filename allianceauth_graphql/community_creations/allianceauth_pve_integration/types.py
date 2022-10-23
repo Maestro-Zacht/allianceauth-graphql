@@ -41,7 +41,7 @@ class EntryType(DjangoObjectType):
 class RotationType(DjangoObjectType):
     sales_percentage = graphene.Float()
     days_since = graphene.Int()
-    estimated_total = graphene.Float()
+    estimated_total = graphene.Int()
     summary = graphene.List(RattingSummaryType)
 
     class Meta:
