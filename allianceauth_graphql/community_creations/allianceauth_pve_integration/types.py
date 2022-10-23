@@ -18,7 +18,7 @@ class RattingSummaryType(graphene.ObjectType):
     estimated_total = graphene.Float()
     actual_total = graphene.Float()
 
-    def resolve_character(self, info):
+    def resolve_main_character(self, info):
         try:
             return User.objects.get(pk=self['user']).profile.main_character
         except:
