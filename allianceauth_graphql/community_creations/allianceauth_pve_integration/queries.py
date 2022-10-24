@@ -2,14 +2,17 @@ import graphene
 from graphql_jwt.decorators import login_required, permission_required
 
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Exists, F, OuterRef
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 
 from allianceauth.authentication.models import CharacterOwnership
 from allianceauth.eveonline.models import EveCharacter
 
 
-from allianceauth_pve.models import Rotation, PveButton, RoleSetup
+from allianceauth_pve.models import Rotation, PveButton, RoleSetup, General
 from allianceauth_pve.actions import running_averages
 from allianceauth_graphql.eveonline.types import EveCharacterType
 
@@ -50,18 +53,27 @@ class Query:
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
     def resolve_search_rotation_characters(self, info, name=None, exclude_characters_ids=[]):
-        ratting_users = User.objects.filter(
-            Q(groups__permissions__codename='access_pve') |
-            Q(user_permissions__codename='access_pve') |
-            Q(profile__state__permissions__codename='access_pve'),
-            profile__main_character__isnull=False,
+        content_type = ContentType.objects.get_for_model(General)
+        permission = Permission.objects.get(content_type=content_type, codename='access_pve')
+
+        ownerships = CharacterOwnership.objects.filter(
+            Q(user__groups__permissions=permission) |
+            Q(user__user_permissions=permission) |
+            Q(user__profile__state__permissions=permission),
+            user__profile__main_character__isnull=False,
         )
 
-        ownerships = CharacterOwnership.objects.filter(user__in=ratting_users)
-        results = EveCharacter.objects.filter(pk__in=ownerships.values('character'))
-
         if name:
-            results = results.filter(character_name__icontains=name)
+            alts_name = CharacterOwnership.objects.filter(user=OuterRef('user'), character__character_name__icontains=name)
+            ownerships = ownerships.filter(
+                Q(character__character_name__icontains=name) |
+                (Exists(alts_name) & Q(character=F('user__profile__main_character')))
+            )
+
+        if getattr(settings, 'PVE_ONLY_MAINS', False):
+            ownerships = ownerships.filter(character=F('user__profile__main_character'))
+
+        results = EveCharacter.objects.filter(pk__in=ownerships.values('character'))
 
         if len(exclude_characters_ids) > 0:
             results = results.exclude(pk__in=exclude_characters_ids)

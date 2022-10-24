@@ -51,6 +51,9 @@ class EntryInput(graphene.InputObjectType):
         if total <= 0:
             errors.append('Form not valid, you need at least 1 person to receive loot')
 
+        if len(input.roles) == 0 or len(input.shares) == 0:
+            errors.append('Not enough shares or roles')
+
         return errors
 
 

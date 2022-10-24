@@ -29,8 +29,17 @@ class CreateRattingEntry(graphene.Mutation):
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
     def mutate(cls, root, info, input, rotation_id):
-        errors = EntryInput.is_valid(input)
-        ok = len(errors) == 0
+        try:
+            rotation = Rotation.objects.get(pk=rotation_id)
+        except Rotation.DoesNotExist:
+            ok = False
+            errors = ["Rotation doesn't exists"]
+        else:
+            ok = not rotation.is_closed
+            errors = [] if ok else ['The rotation is closed, you cannot add an entry']
+
+        errors += EntryInput.is_valid(input)
+        ok = ok and len(errors) == 0
 
         if ok:
             with transaction.atomic():
@@ -72,7 +81,6 @@ class CreateRattingEntry(graphene.Mutation):
 
                 EntryCharacter.objects.bulk_create(to_add)
 
-                entry.update_share_totals()
         else:
             entry = None
 
@@ -97,7 +105,7 @@ class ModifyRattingEntry(graphene.Mutation):
         user = info.context.user
         entry = Entry.objects.get(pk=entry_id)
 
-        if user != entry.created_by and not user.is_superuser:
+        if entry.rotation.is_closed or (user != entry.created_by and not user.is_superuser):
             ok = False
             errors.append('You cannot edit this entry')
 
@@ -140,8 +148,6 @@ class ModifyRattingEntry(graphene.Mutation):
 
                 EntryCharacter.objects.bulk_create(to_add)
 
-                entry.update_share_totals()
-
         return cls(ok=ok, errors=errors, entry=entry)
 
 
@@ -160,7 +166,7 @@ class DeleteRattingEntry(graphene.Mutation):
         entry = Entry.objects.select_related('rotation').get(pk=entry_id)
         rotation = entry.rotation
 
-        if user != entry.created_by and not user.is_superuser:
+        if rotation.is_closed or (user != entry.created_by and not user.is_superuser):
             ok = False
         else:
             ok = True
@@ -202,9 +208,6 @@ class CloseRotation(graphene.Mutation):
                 rotation.is_closed = True
                 rotation.closed_at = timezone.now()
                 rotation.save()
-
-                for entry in rotation.entries.all():
-                    entry.update_share_totals()
 
             ok = True
 
