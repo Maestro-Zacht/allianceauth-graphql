@@ -18,9 +18,9 @@ class RattingSummaryType(graphene.ObjectType):
     estimated_total = graphene.Float()
     actual_total = graphene.Float()
 
-    def resolve_character(self, info):
+    def resolve_main_character(self, info):
         try:
-            return User.objects.get(pk=self['user']).profile.main_character
+            return User.objects.select_related('profile__main_character').get(pk=self['user']).profile.main_character
         except:
             return None
 
@@ -41,7 +41,7 @@ class EntryType(DjangoObjectType):
 class RotationType(DjangoObjectType):
     sales_percentage = graphene.Float()
     days_since = graphene.Int()
-    estimated_total = graphene.Float()
+    estimated_total = graphene.Int()
     summary = graphene.List(RattingSummaryType)
 
     class Meta:

@@ -53,8 +53,9 @@ class EsiTokenAuthMutation(graphene.Mutation):
                 status = LoginStatus.LOGGED_IN
             elif not user.email:
                 status = LoginStatus.REGISTRATION
-                info.context.session.update({'registration_uid': user.pk})
-                info.context.session.save()
+                if getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
+                    info.context.session.update({'registration_uid': user.pk})
+                    info.context.session.save()
             else:
                 errors.append('Unable to authenticate the selected character')
 
@@ -64,6 +65,10 @@ class EsiTokenAuthMutation(graphene.Mutation):
         if status == LoginStatus.LOGGED_IN:
             token = get_token(user)
             refresh_token = create_refresh_token(user).get_token()
+        elif status == LoginStatus.REGISTRATION and not getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
+            token = get_token(user)
+            refresh_token = create_refresh_token(user).get_token()
+            status = LoginStatus.LOGGED_IN
         elif status == LoginStatus.REGISTRATION:
             refresh_token = None
             token = signing.dumps(user.pk)
@@ -185,6 +190,76 @@ class AddCharacterMutation(graphene.Mutation):
         return cls(ok=ok, me=user, errors=errors)
 
 
+class RemoveEsiTokenMutation(graphene.Mutation):
+    """Mutation for removing an ESI token
+    """
+
+    class Arguments:
+        token_id = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    me = graphene.Field(UserType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, token_id):
+        errors = []
+        user = info.context.user
+
+        try:
+            token: Token = Token.objects.get(id=token_id)
+
+            if token.user == user:
+                try:
+                    token.refresh()
+                    ok = True
+                except Exception as e:
+                    errors.append(f"Failed to refresh token. {e}")
+                    ok = False
+            else:
+                errors.append("This token does not belong to you.")
+                ok = False
+        except Token.DoesNotExist:
+            errors.append("Token does not exist")
+            ok = False
+
+        return cls(ok=ok, errors=errors, me=user)
+
+
+class RefreshEsiTokenMutation(graphene.Mutation):
+    """Mutation for refreshing an ESI token
+    """
+
+    class Arguments:
+        token_id = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    me = graphene.Field(UserType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, token_id):
+        errors = []
+        user = info.context.user
+
+        try:
+            token: Token = Token.objects.get(id=token_id)
+
+            if token.user == user:
+                token.delete()
+                ok = True
+            else:
+                errors.append("This token does not belong to you.")
+                ok = False
+        except Token.DoesNotExist:
+            errors.append("Token does not exist")
+            ok = False
+
+        return cls(ok=ok, errors=errors, me=user)
+
+
 class Mutation:
     token_auth = EsiTokenAuthMutation.Field()
     verify_token = graphql_jwt.Verify.Field()
@@ -193,3 +268,5 @@ class Mutation:
     change_main_character = ChangeMainCharacterMutation.Field()
     add_character = AddCharacterMutation.Field()
     email_registration = RegistrationMutation.Field()
+    remove_esi_token = RemoveEsiTokenMutation.Field()
+    refresh_esi_token = RefreshEsiTokenMutation.Field()
