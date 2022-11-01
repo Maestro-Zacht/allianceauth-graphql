@@ -12,7 +12,7 @@ on:
 
 jobs:
   test-coverage:
-    name: Test Coverage (Python ${{ matrix.python-version }}
+    name: Test Coverage (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
 
     services:
@@ -82,7 +82,6 @@ jobs:
           verbose: true # optional (default = false)
 
   build-test:
-    needs: [test-coverage]
     name: PyPi Build Test
     runs-on: ubuntu-latest
 
