@@ -3,7 +3,7 @@ from unittest.mock import patch
 from graphene_django.utils.testing import GraphQLTestCase
 
 from esi.tests import _generate_token, _store_as_Token
-from app_utils.testdata_factories import UserFactory
+from app_utils.testdata_factories import UserMainFactory
 
 from ..authentication.types import LoginStatus
 
@@ -12,12 +12,12 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = UserFactory()
+        cls.user = UserMainFactory()
 
         cls.token = _store_as_Token(
             _generate_token(
-                character_id=99,
-                character_name=cls.user.username,
+                character_id=cls.user.main_character.character_id,
+                character_name=cls.user.main_character.character_name,
                 scopes=['abc', 'xyz', '123']
             ),
             cls.user
