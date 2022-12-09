@@ -16,8 +16,8 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
 
         cls.token = _store_as_Token(
             _generate_token(
-                character_id=cls.user.main_character.character_id,
-                character_name=cls.user.main_character.character_name,
+                character_id=cls.user.profile.main_character.character_id,
+                character_name=cls.user.profile.main_character.character_name,
                 scopes=['abc', 'xyz', '123']
             ),
             cls.user
