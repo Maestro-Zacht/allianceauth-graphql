@@ -46,7 +46,7 @@ class Query:
             groups = groups\
                 .filter(managedalliancegroup__isnull=True)\
                 .filter(managedcorpgroup__isnull=True)
-        return groups.order_by('name').annotate(status=Value(1))
+        return groups.order_by('name').annotate(status=1)
 
     @login_required
     def resolve_user_characters(self, info):
