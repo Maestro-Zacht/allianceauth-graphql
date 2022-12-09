@@ -23,7 +23,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             cls.user
         )
 
-    @patch('esi.models.Token.objects.create_from_code')
+    @patch('esi.managers.TokenManager.create_from_code')
     def test_logged_in(self, mock_create_from_code):
         mock_create_from_code.return_value = self.token
 
