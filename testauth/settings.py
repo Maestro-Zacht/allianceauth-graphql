@@ -155,7 +155,7 @@ MESSAGE_TAGS = {messages.ERROR: "danger"}
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://localhost:6379/1",  # change the 1 here to change the database used
+        "LOCATION": f"redis://{os.environ.get('AA_REDIS', 'localhost:6379')}/1",  # change the 1 here to change the database used
     }
 }
 
@@ -166,11 +166,11 @@ ALLOWED_HOSTS = ["*"]
 DATABASES = {
     "default": {
         "ENGINE": 'django.db.backends.mysql',
-        'NAME': 'mysql',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.environ.get("AA_DB_NAME", 'mysql'),
+        'USER': os.environ.get("AA_DB_USER", 'root'),
+        'PASSWORD': os.environ.get("AA_DB_PASSWORD", 'root'),
+        'HOST': os.environ.get("AA_DB_HOST", 'localhost'),
+        'PORT': os.environ.get("AA_DB_PORT", '3306'),
     },
 }
 
