@@ -14,14 +14,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
     def setUpTestData(cls):
         cls.user = UserMainFactory()
 
-        cls.token = _store_as_Token(
-            _generate_token(
-                character_id=cls.user.profile.main_character.character_id,
-                character_name=cls.user.profile.main_character.character_name,
-                scopes=['abc', 'xyz', '123']
-            ),
-            cls.user
-        )
+        cls.token = cls.user.token_set.first()
 
     @patch('esi.managers.TokenManager.create_from_code')
     def test_logged_in(self, mock_create_from_code):
@@ -30,7 +23,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(sso_token: $sso_token) {
+                tokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -56,8 +49,8 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         self.assertEqual(len(data['errors']), 0)
 
         self.assertIn('status', data)
-        self.assertEqual(data['status'], LoginStatus.LOGGED_IN)
+        self.assertEqual(LoginStatus[data['status']], LoginStatus.LOGGED_IN)
 
         self.assertIn('me', data)
         self.assertIn('id', data['me'])
-        self.assertEqual(data['me']['id'], self.user.pk)
+        self.assertEqual(data['me']['id'], str(self.user.pk))
