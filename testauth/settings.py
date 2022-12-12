@@ -9,8 +9,8 @@ from celery.schedules import crontab
 # Django
 from django.contrib import messages
 
-# maestro edits
-import pkg_resources
+from datetime import timedelta
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -267,6 +267,9 @@ DEBUG = False
 # Add any additional apps to this list.
 INSTALLED_APPS += [
     "allianceauth_pve",
+    'allianceauth_graphql',
+    'graphene_django',
+    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     'allianceauth.analytics',
     "allianceauth.eveonline.autogroups",
     "allianceauth.hrapplications",
@@ -315,3 +318,21 @@ SITE_URL = "https://example.com"
 
 # Django security
 CSRF_TRUSTED_ORIGINS = [SITE_URL]
+
+GRAPHENE = {
+    'SCHEMA': 'allianceauth_graphql.schema.schema',
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
+}
+
+AUTHENTICATION_BACKENDS += [
+    "graphql_jwt.backends.JSONWebTokenBackend",
+]
+
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+    "JWT_EXPIRATION_DELTA": timedelta(days=36500),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=36500),
+}
