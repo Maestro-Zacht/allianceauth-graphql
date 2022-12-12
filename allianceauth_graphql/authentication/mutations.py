@@ -152,7 +152,7 @@ class ChangeMainCharacterMutation(graphene.Mutation):
         errors = []
         user = info.context.user
         try:
-            co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=info.context.user)
+            co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=user)
             ok = True
         except CharacterOwnership.DoesNotExist:
             ok = False

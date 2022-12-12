@@ -1,5 +1,8 @@
-from django.test import override_settings
 from unittest.mock import patch
+from faker import Faker
+
+from django.test import override_settings
+from django.core import mail
 from graphene_django.utils.testing import GraphQLTestCase
 
 from app_utils.testdata_factories import UserMainFactory
@@ -174,3 +177,114 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
 
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_active)
+
+
+class TestRegistrationMutation(GraphQLTestCase):
+    maxDiff = None
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserMainFactory(
+            is_active=False,
+            email='',
+        )
+
+    @override_settings(REDIRECT_SITE='https://www.example.com')
+    def test_email_registration(self):
+        session = self.client.session
+        session.update({'registration_uid': self.user.pk})
+        session.save()
+
+        fake = Faker()
+
+        response = self.query(
+            '''
+            mutation testM($input: RegistrationMutationInput!) {
+                emailRegistration(input: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data={'email': fake.email()}
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'emailRegistration': {
+                        'errors': [],
+                        'ok': True
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(REDIRECT_SITE='https://www.example.com')
+    def test_missing_user_id(self):
+        fake = Faker()
+
+        response = self.query(
+            '''
+            mutation testM($input: RegistrationMutationInput!) {
+                emailRegistration(input: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data={'email': fake.email()}
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'emailRegistration': {
+                        'errors': ['You need to do the token registration step first!'],
+                        'ok': False
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_missing_site(self):
+        session = self.client.session
+        session.update({'registration_uid': self.user.pk})
+        session.save()
+
+        fake = Faker()
+
+        response = self.query(
+            '''
+            mutation testM($input: RegistrationMutationInput!) {
+                emailRegistration(input: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data={'email': fake.email()}
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'emailRegistration': {
+                        'errors': ['Redirect site not specified in settings!'],
+                        'ok': False
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(len(mail.outbox), 0)
