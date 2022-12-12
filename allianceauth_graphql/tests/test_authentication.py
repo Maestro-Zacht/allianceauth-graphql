@@ -38,19 +38,17 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
 
         self.assertResponseNoErrors(response)
 
-        content = json.loads(response.content)
-
-        self.assertIn('data', content)
-        self.assertIn('tokenAuth', content['data'])
-
-        data = content['data']['tokenAuth']
-
-        self.assertIn('errors', data)
-        self.assertEqual(len(data['errors']), 0)
-
-        self.assertIn('status', data)
-        self.assertEqual(LoginStatus[data['status']], LoginStatus.LOGGED_IN)
-
-        self.assertIn('me', data)
-        self.assertIn('id', data['me'])
-        self.assertEqual(data['me']['id'], str(self.user.pk))
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'tokenAuth': {
+                        'errors': [],
+                        'status': LoginStatus.LOGGED_IN.name,
+                        'me': {
+                            'id': str(self.user.pk)
+                        }
+                    }
+                }
+            }
+        )
