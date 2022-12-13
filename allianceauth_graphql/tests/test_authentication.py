@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 from faker import Faker
 
@@ -5,7 +6,8 @@ from django.test import override_settings
 from django.core import mail
 from graphene_django.utils.testing import GraphQLTestCase
 
-from app_utils.testdata_factories import UserMainFactory
+from app_utils.testdata_factories import UserMainFactory, EveCharacterFactory, UserFactory
+from app_utils.testing import add_character_to_user
 
 from ..authentication.types import LoginStatus
 
@@ -32,12 +34,16 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
                     }
                     errors
                     status
+                    token
                 }
             }
             ''',
             operation_name='testM',
             variables={'sso_token': 'nice_token'}
         )
+
+        content = json.loads(response.content)
+        token = content['data']['tokenAuth']['token']
 
         self.assertJSONEqual(
             response.content,
@@ -48,7 +54,31 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
                         'status': LoginStatus.LOGGED_IN.name,
                         'me': {
                             'id': str(self.user.pk)
-                        }
+                        },
+                        'token': token
+                    }
+                }
+            }
+        )
+
+        response = self.query(
+            '''
+            query q {
+                me {
+                    id
+                }
+            }
+            ''',
+            operation_name='q',
+            headers={'HTTP_AUTHORIZATION': f'JWT {token}'}
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'me': {
+                        'id': str(self.user.pk)
                     }
                 }
             }
@@ -288,3 +318,146 @@ class TestRegistrationMutation(GraphQLTestCase):
         )
 
         self.assertEqual(len(mail.outbox), 0)
+
+
+class TestChangeMainCharacterMutation(GraphQLTestCase):
+    maxDiff = None
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user1 = UserFactory()
+        cls.user2 = UserFactory()
+
+        cls.newchar = EveCharacterFactory()
+
+    def test_ok(self):
+        add_character_to_user(self.user1, self.newchar)
+
+        self.client.force_login(self.user1, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                changeMainCharacter(newMainCharacterId: $input) {
+                    errors
+                    ok
+                    me {
+                        id
+                        profile {
+                            mainCharacter {
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=self.newchar.character_id
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'changeMainCharacter': {
+                        'errors': [],
+                        'ok': True,
+                        'me': {
+                            'id': str(self.user1.pk),
+                            'profile': {
+                                'mainCharacter': {
+                                    'id': str(self.newchar.pk)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+    def test_character_not_added(self):
+        self.client.force_login(self.user1, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                changeMainCharacter(newMainCharacterId: $input) {
+                    errors
+                    ok
+                    me {
+                        id
+                        profile {
+                            mainCharacter {
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=self.newchar.character_id
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'changeMainCharacter': {
+                        'errors': ["You never added this character"],
+                        'ok': False,
+                        'me': {
+                            'id': str(self.user1.pk),
+                            'profile': {
+                                'mainCharacter': None
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+    def test_character_not_owned(self):
+        add_character_to_user(self.user2, self.newchar)
+
+        self.client.force_login(self.user1, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                changeMainCharacter(newMainCharacterId: $input) {
+                    errors
+                    ok
+                    me {
+                        id
+                        profile {
+                            mainCharacter {
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=self.newchar.character_id
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'changeMainCharacter': {
+                        'errors': ["You don't own this character"],
+                        'ok': False,
+                        'me': {
+                            'id': str(self.user1.pk),
+                            'profile': {
+                                'mainCharacter': None
+                            }
+                        }
+                    }
+                }
+            }
+        )
