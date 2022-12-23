@@ -568,7 +568,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
         )
 
 
-class TestRemoveEsiTokenMutation(GraphQLTestCase):
+class TestRefreshEsiTokenMutation(GraphQLTestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -588,7 +588,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                refreshEsiToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -602,7 +602,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'refreshEsiToken': {
                         'errors': [],
                         'ok': True,
                     }
@@ -610,11 +610,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             }
         )
 
-        self.assertFalse(
-            Token.objects
-            .filter(pk=newtoken.pk)
-            .exists()
-        )
+        self.assertTrue(mock_refresh.called)
 
     def test_token_not_exists(self):
         self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
@@ -622,7 +618,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                refreshEsiToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -636,7 +632,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'refreshEsiToken': {
                         'errors': ["Token does not exist"],
                         'ok': False,
                     }
@@ -656,7 +652,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                refreshEsiToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -670,18 +666,12 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'refreshEsiToken': {
                         'errors': ["This token does not belong to you."],
                         'ok': False,
                     }
                 }
             }
-        )
-
-        self.assertTrue(
-            Token.objects
-            .filter(pk=newtoken.pk)
-            .exists()
         )
 
     @patch('esi.models.Token.refresh')
@@ -698,7 +688,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                refreshEsiToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -712,7 +702,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'refreshEsiToken': {
                         'errors': ["Failed to refresh token. Test"],
                         'ok': False,
                     }
@@ -720,8 +710,4 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             }
         )
 
-        self.assertTrue(
-            Token.objects
-            .filter(pk=newtoken.pk)
-            .exists()
-        )
+        self.assertTrue(mock_refresh.called)
