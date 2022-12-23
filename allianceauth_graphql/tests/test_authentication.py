@@ -711,3 +711,103 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
         )
 
         self.assertTrue(mock_refresh.called)
+
+
+class TestRemoveEsiTokenMutation(GraphQLTestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserMainFactory()
+        cls.token = cls.user.token_set.first()
+
+    def test_ok(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=self.token.pk
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': [],
+                        'ok': True,
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(self.user.token_set.count(), 0)
+
+    def test_token_not_belongs_to_user(self):
+        user2 = UserFactory()
+
+        self.client.force_login(user2, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=self.token.pk
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': ["This token does not belong to you."],
+                        'ok': False,
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(self.user.token_set.count(), 1)
+
+    def test_token_not_exists(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=generate_invalid_pk(Token)
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': ["Token does not exist"],
+                        'ok': False,
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(self.user.token_set.count(), 1)
