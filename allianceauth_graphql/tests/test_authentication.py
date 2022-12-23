@@ -7,8 +7,9 @@ from django.core import mail
 from graphene_django.utils.testing import GraphQLTestCase
 
 from app_utils.testdata_factories import UserMainFactory, EveCharacterFactory, UserFactory
-from app_utils.testing import add_character_to_user, add_new_token
+from app_utils.testing import add_character_to_user, add_new_token, generate_invalid_pk
 
+from esi.models import Token
 from ..authentication.types import LoginStatus
 
 
@@ -564,4 +565,163 @@ class TestAddCharacterMutation(GraphQLTestCase):
                     }
                 }
             }
+        )
+
+
+class TestRemoveEsiTokenMutation(GraphQLTestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+
+    @patch('esi.models.Token.refresh')
+    def test_ok(self, mock_refresh):
+        mock_refresh.return_value = None
+
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        newtoken = add_new_token(
+            self.user,
+            EveCharacterFactory()
+        )
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=newtoken.pk
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': [],
+                        'ok': True,
+                    }
+                }
+            }
+        )
+
+        self.assertFalse(
+            Token.objects
+            .filter(pk=newtoken.pk)
+            .exists()
+        )
+
+    def test_token_not_exists(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=generate_invalid_pk(Token)
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': ["Token does not exist"],
+                        'ok': False,
+                    }
+                }
+            }
+        )
+
+    def test_token_not_belongs_to_user(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        newuser = UserFactory()
+        newtoken = add_new_token(
+            newuser,
+            EveCharacterFactory()
+        )
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=newtoken.pk
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': ["This token does not belong to you."],
+                        'ok': False,
+                    }
+                }
+            }
+        )
+
+        self.assertTrue(
+            Token.objects
+            .filter(pk=newtoken.pk)
+            .exists()
+        )
+
+    @patch('esi.models.Token.refresh')
+    def test_exception(self, mock_refresh):
+        mock_refresh.side_effect = Exception('Test')
+
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        newtoken = add_new_token(
+            self.user,
+            EveCharacterFactory()
+        )
+
+        response = self.query(
+            '''
+            mutation testM($input: Int!) {
+                removeEsiToken(tokenId: $input) {
+                    errors
+                    ok
+                }
+            }
+            ''',
+            operation_name='testM',
+            input_data=newtoken.pk
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'removeEsiToken': {
+                        'errors': ["Failed to refresh token. Test"],
+                        'ok': False,
+                    }
+                }
+            }
+        )
+
+        self.assertTrue(
+            Token.objects
+            .filter(pk=newtoken.pk)
+            .exists()
         )
