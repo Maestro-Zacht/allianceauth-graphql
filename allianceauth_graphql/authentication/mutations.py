@@ -191,7 +191,7 @@ class AddCharacterMutation(graphene.Mutation):
 
 
 class RefreshEsiTokenMutation(graphene.Mutation):
-    """Mutation for removing an ESI token
+    """Mutation for refreshing an ESI token
     """
 
     class Arguments:
@@ -228,7 +228,7 @@ class RefreshEsiTokenMutation(graphene.Mutation):
 
 
 class RemoveEsiTokenMutation(graphene.Mutation):
-    """Mutation for refreshing an ESI token
+    """Mutation for removing an ESI token
     """
 
     class Arguments:
