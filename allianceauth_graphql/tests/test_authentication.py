@@ -2,8 +2,9 @@ import json
 from unittest.mock import patch
 from faker import Faker
 
-from django.test import override_settings
-from django.core import mail
+from django.test import override_settings, TestCase
+from django.core import mail, signing
+from django.urls import reverse
 from graphene_django.utils.testing import GraphQLTestCase
 
 from app_utils.testdata_factories import UserMainFactory, EveCharacterFactory, UserFactory
@@ -11,6 +12,10 @@ from app_utils.testing import add_character_to_user, add_new_token, generate_inv
 
 from esi.models import Token
 from ..authentication.types import LoginStatus
+
+
+MOCK_REGISTRATION_SALT = "testing"
+MOCK_REDIRECT_SITE = 'https://example.com'
 
 
 @override_settings(REGISTRATION_VERIFY_EMAIL=True)
@@ -890,3 +895,47 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         )
 
         self.assertEqual(self.user.token_set.count(), 1)
+
+
+@override_settings(
+    REGISTRATION_SALT=MOCK_REGISTRATION_SALT,
+    REDIRECT_SITE=MOCK_REDIRECT_SITE
+)
+class TestVerifyEmailView(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory(is_active=False)
+
+    def test_ok(self):
+        activation_key = signing.dumps([self.user.pk, self.user.email], salt=MOCK_REGISTRATION_SALT)
+
+        email = self.user.email
+        self.user.email = ''
+        self.user.save()
+
+        response = self.client.get(reverse('allianceauth_graphql:verify_email') + f"?activation_key={activation_key}")
+
+        self.assertRedirects(
+            response,
+            MOCK_REDIRECT_SITE + '/registration/callback/',
+            fetch_redirect_response=False
+        )
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, email)
+        self.assertTrue(self.user.is_active)
+
+    def test_not_ok(self):
+        activation_key = signing.dumps([self.user.pk, self.user.email], salt=MOCK_REGISTRATION_SALT + 'WRONG')
+
+        self.user.email = ''
+        self.user.save()
+
+        response = self.client.get(reverse('allianceauth_graphql:verify_email') + f"?activation_key={activation_key}")
+
+        self.assertContains(response, 'Invalid signature', html=True)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, '')
+        self.assertFalse(self.user.is_active)
