@@ -3,40 +3,44 @@ from graphene_django.utils.testing import GraphQLTestCase
 from app_utils.testdata_factories import UserMainFactory
 
 
-class TestTypes(GraphQLTestCase):
+class TestAll(GraphQLTestCase):
 
     @classmethod
     def setUpTestData(cls):
         cls.user = UserMainFactory()
 
-    def test_zkill_link(self):
+    def test_user_tokens(self):
         self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
 
         response = self.query(
             '''
             query q {
-                me {
-                    profile {
-                        mainCharacter {
-                            zkillboard
-                        }
+                userTokens {
+                    id
+                    character {
+                        id
                     }
                 }
             }
             '''
         )
 
+        self.assertEqual(self.user.token_set.count(), 1)
+
+        token = self.user.token_set.first()
+
         self.assertJSONEqual(
             response.content,
             {
                 'data': {
-                    'me': {
-                        'profile': {
-                            'mainCharacter': {
-                                'zkillboard': f"https://zkillboard.com/character/{self.user.profile.main_character.character_id}/"
+                    'userTokens': [
+                        {
+                            'id': str(token.pk),
+                            'character': {
+                                'id': str(self.user.profile.main_character.pk)
                             }
                         }
-                    }
+                    ]
                 }
             }
         )
