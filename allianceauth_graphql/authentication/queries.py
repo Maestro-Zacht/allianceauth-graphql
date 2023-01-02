@@ -17,18 +17,20 @@ if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
 else:
     _has_auto_groups = False
 
+DEFAULT_SCOPES = getattr(settings, 'GRAPHQL_LOGIN_SCOPES', ['publicData'])
+
 
 class Query:
-    login_url = graphene.String()
+    login_url = graphene.String(scopes=graphene.List(graphene.String, default_value=DEFAULT_SCOPES))
     me = graphene.Field(UserType)
     user_groups = graphene.List(GroupType)
     user_characters = graphene.List(EveCharacterType, description="List of the user's alts")
 
-    def resolve_login_url(self, info):
+    def resolve_login_url(self, info, scopes):
         oauth = OAuth2Session(
             app_settings.ESI_SSO_CLIENT_ID,
             redirect_uri=app_settings.ESI_SSO_CALLBACK_URL,
-            scope=getattr(settings, 'GRAPHQL_LOGIN_SCOPES', ['publicData'])
+            scope=scopes
         )
 
         redirect_url, state = oauth.authorization_url(app_settings.ESI_OAUTH_LOGIN_URL)
