@@ -1,4 +1,6 @@
 import json
+import re
+from urllib.parse import quote_plus
 from unittest.mock import patch
 from faker import Faker
 
@@ -8,9 +10,12 @@ from django.urls import reverse
 from graphene_django.utils.testing import GraphQLTestCase
 
 from app_utils.testdata_factories import UserMainFactory, EveCharacterFactory, UserFactory
-from app_utils.testing import add_character_to_user, add_new_token, generate_invalid_pk
+from app_utils.testing import add_character_to_user, add_new_token, generate_invalid_pk, create_authgroup
 
 from esi.models import Token
+from esi import app_settings
+from allianceauth.eveonline.autogroups.models import AutogroupsConfig
+
 from ..authentication.types import LoginStatus
 
 
@@ -939,3 +944,143 @@ class TestVerifyEmailView(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.email, '')
         self.assertFalse(self.user.is_active)
+
+
+class TestQueries(GraphQLTestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserMainFactory()
+
+    def test_login_url(self):
+        response = self.query(
+            '''
+            query q {
+                loginUrl(scopes: ["test1", "test2"])
+            }
+            '''
+        )
+
+        data = json.loads(response.content)
+        self.assertIn('data', data)
+        self.assertIn('loginUrl', data['data'])
+
+        login_url = data['data']['loginUrl']
+
+        self.assertRegex(login_url, rf"{re.escape(app_settings.ESI_OAUTH_LOGIN_URL)}\?response_type=code\&client_id=[0-9a-z]+\&redirect_uri={re.escape(quote_plus(app_settings.ESI_SSO_CALLBACK_URL))}\&scope={re.escape(quote_plus('test1 test2'))}\&state=[0-9a-zA-Z]+")
+
+    def test_me(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            query q {
+                me {
+                    id
+                }
+            }
+            '''
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'me': {
+                        'id': str(self.user.pk)
+                    }
+                }
+            }
+        )
+
+    @patch('allianceauth_graphql.authentication.queries._has_auto_groups', False)
+    def test_user_groups(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        group1 = create_authgroup()
+        self.user.groups.add(group1)
+
+        response = self.query(
+            '''
+            query q {
+                userGroups {
+                    id
+                }
+            }
+            '''
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'userGroups': [
+                        {
+                            'id': str(group1.pk)
+                        }
+                    ]
+                }
+            }
+        )
+
+    def test_user_groups_exclude_autogroups(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        group1 = create_authgroup()
+        self.user.groups.add(group1)
+
+        config: AutogroupsConfig = AutogroupsConfig.objects.create(
+            corp_groups=True,
+            alliance_groups=True
+        )
+
+        config.states.add(self.user.profile.state)
+
+        response = self.query(
+            '''
+            query q {
+                userGroups {
+                    id
+                }
+            }
+            '''
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'userGroups': [
+                        {
+                            'id': str(group1.pk)
+                        }
+                    ]
+                }
+            }
+        )
+
+    def test_user_characters(self):
+        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
+
+        response = self.query(
+            '''
+            query q {
+                userCharacters {
+                    id
+                }
+            }
+            '''
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'userCharacters': [
+                        {
+                            'id': str(self.user.profile.main_character.pk)
+                        }
+                    ]
+                }
+            }
+        )
