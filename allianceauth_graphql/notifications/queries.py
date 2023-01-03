@@ -12,11 +12,11 @@ class Query:
     notif_unread_count = graphene.Int(user_pk=graphene.ID())
 
     @login_required
-    def resolve_notifications_read_list(self, info):
+    def resolve_notif_read_list(self, info):
         return Notification.objects.filter(user=info.context.user, viewed=True).order_by("-timestamp")
 
     @login_required
-    def resolve_notifications_unread_list(self, info):
+    def resolve_notif_unread_list(self, info):
         return Notification.objects.filter(user=info.context.user, viewed=False).order_by("-timestamp")
 
     def resolve_notif_unread_count(self, info, user_pk=None):
