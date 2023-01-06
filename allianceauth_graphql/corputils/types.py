@@ -35,10 +35,7 @@ class CorpStatsType(DjangoObjectType):
         fields = ('corp', 'last_update', 'members',)
 
     def resolve_registered(self, info):
-        return EveCharacter.objects.filter(character_id__in=self.members.values('character_id'), character_ownership__isnull=False)\
-            .select_related('character_ownership', 'character_ownership__user__profile__main_character')\
-            .prefetch_related('character_ownership__user__character_ownerships')\
-            .prefetch_related('character_ownership__user__character_ownerships__character')
+        return EveCharacter.objects.filter(character_id__in=self.members.values('character_id'), character_ownership__isnull=False)
 
     def resolve_unregistered(self, info):
         return EveCharacter.objects.filter(character_id__in=self.members.values('character_id'), character_ownership__isnull=True)
