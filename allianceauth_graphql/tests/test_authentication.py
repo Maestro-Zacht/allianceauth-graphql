@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from unittest.mock import patch
 from faker import Faker
 
-from django.test import override_settings, TestCase
+from django.test import override_settings, TestCase, modify_settings
 from django.core import mail, signing
 from django.urls import reverse
 from graphene_django.utils.testing import GraphQLTestCase
@@ -993,7 +993,7 @@ class TestQueries(GraphQLTestCase):
             }
         )
 
-    @patch('allianceauth_graphql.authentication.queries._has_auto_groups', False)
+    @modify_settings(INSTALLED_APPS={'remove': ['allianceauth.eveonline.autogroups']})
     def test_user_groups(self):
         self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
 
