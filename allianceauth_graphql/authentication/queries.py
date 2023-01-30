@@ -11,11 +11,6 @@ from allianceauth.eveonline.models import EveCharacter
 from .types import GroupType, UserType
 from ..eveonline.types import EveCharacterType
 
-if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
-    _has_auto_groups = True
-    from allianceauth.eveonline.autogroups.models import *
-else:
-    _has_auto_groups = False
 
 DEFAULT_SCOPES = getattr(settings, 'GRAPHQL_LOGIN_SCOPES', ['publicData'])
 
@@ -44,7 +39,7 @@ class Query:
     @login_required
     def resolve_user_groups(self, info):
         groups = info.context.user.groups.all()
-        if _has_auto_groups:
+        if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
             groups = groups\
                 .filter(managedalliancegroup__isnull=True)\
                 .filter(managedcorpgroup__isnull=True)
