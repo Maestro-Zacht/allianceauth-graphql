@@ -1,6 +1,8 @@
 import graphene
 from graphene_django import DjangoObjectType
 
+from django.contrib.auth.models import User
+
 from allianceauth.groupmanagement.models import GroupRequest, AuthGroup, RequestLog
 
 
@@ -30,6 +32,7 @@ class GroupRequestLeaveStatus(graphene.Enum):
 
 class GroupRequestType(DjangoObjectType):
     group = graphene.Field('allianceauth_graphql.authentication.types.GroupType', required=True)
+    user = graphene.Field('allianceauth_graphql.authentication.types.UserType', required=True)
 
     class Meta:
         model = GroupRequest
@@ -75,17 +78,22 @@ class RequestLogType(DjangoObjectType):
     def resolve_request_type(self, info):
         if self.request_type is None:
             return GroupRequestLogType.REMOVED
-        elif self.request_type is True:
+        elif self.request_type:  # True
             return GroupRequestLogType.LEAVE
-        elif self.request_type is False:
+        else:  # False
             return GroupRequestLogType.JOIN
 
     def resolve_action(self, info):
-        if self.request_type is not None:
-            if self.action is True:
-                return GroupRequestLogActionType.ACCEPT
-            elif self.action is False:
-                return GroupRequestLogActionType.REJECT
+        if self.request_type is None:
+            return None
+        elif self.action:
+            return GroupRequestLogActionType.ACCEPT
+        else:
+            return GroupRequestLogActionType.REJECT
+
+    def resolve_requestor(self, info):
+        username = self.requestor()
+        return User.objects.get(username=username)
 
 
 class GroupMembershipAuditType(graphene.ObjectType):
