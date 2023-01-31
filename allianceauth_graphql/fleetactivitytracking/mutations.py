@@ -40,12 +40,12 @@ class AddFatParticipation(graphene.Mutation):
     def mutate(cls, root, info, token_id, fatlink_hash):
         try:
             token = Token.objects.all().require_scopes(' '.join(cls._required_scopes)).get(pk=token_id)
-            error = None
             c = token.get_esi_client(spec_file=SWAGGER_SPEC_PATH)
             character_online = c.Location.get_characters_character_id_online(
                 character_id=token.character_id
             ).result()
             character = EveCharacter.objects.get_character_by_id(token.character_id)
+            error = None
         except Token.DoesNotExist:
             error = 'Token not valid'
             ok = False
@@ -106,37 +106,26 @@ class CreateFatlink(DjangoFormMutation):
         form_class = FatlinkForm
 
     ok = graphene.Boolean()
-    errors = graphene.List(graphene.String)
     fatlink = graphene.Field(FatlinkType)
 
     @classmethod
     @login_required
     @permission_required('auth.fleetactivitytracking')
-    def perform_mutate(cls, form, info):
+    def perform_mutate(cls, form: FatlinkForm, info):
         fatlink = Fatlink()
         fatlink.fleet = form.cleaned_data["fleet"]
         fatlink.duration = form.cleaned_data["duration"]
         fatlink.fatdatetime = timezone.now()
         fatlink.creator = info.context.user
         fatlink.hash = get_random_string(length=15)
-        try:
-            fatlink.full_clean()
-            fatlink.save()
-            ok = True
-            errors = []
-        except ValidationError as e:
-            form = FatlinkForm()
-            errors = []
-            for errorname, message in e.message_dict.items():
-                errors.append(message[0].decode())
-            ok = False
+        fatlink.save()
 
-        return cls(ok=ok, errors=errors, fatlink=fatlink if ok else None)
+        return cls(ok=True, fatlink=fatlink, **form.cleaned_data)
 
 
 class RemoveCharFatlink(graphene.Mutation):
     class Arguments:
-        fat_hash = graphene.String(required=True)
+        fatlink_hash = graphene.String(required=True)
         character_id = graphene.Int(required=True)
 
     ok = graphene.Boolean()
@@ -145,28 +134,28 @@ class RemoveCharFatlink(graphene.Mutation):
     @classmethod
     @login_required
     @permission_required('auth.fleetactivitytracking')
-    def mutate(cls, root, info, fat_hash, character_id):
-        fatlink = Fatlink.objects.get(hash=fat_hash)
+    def mutate(cls, root, info, fatlink_hash, character_id):
+        fatlink = Fatlink.objects.get(hash=fatlink_hash)
         Fat.objects.filter(fatlink=fatlink, character__character_id=character_id).delete()
         return cls(ok=True, fatlink=fatlink)
 
 
 class DeleteFatlink(graphene.Mutation):
     class Arguments:
-        fat_hash = graphene.String(required=True)
+        fatlink_hash = graphene.String(required=True)
 
     ok = graphene.Boolean()
 
     @classmethod
     @login_required
     @permission_required('auth.fleetactivitytracking')
-    def mutate(cls, root, info, fat_hash):
-        Fatlink.objects.get(hash=fat_hash).delete()
+    def mutate(cls, root, info, fatlink_hash):
+        Fatlink.objects.get(hash=fatlink_hash).delete()
         return cls(ok=True)
 
 
 class Mutation:
-    fat_partecipate_to_fatlink = AddFatParticipation.Field()
+    fat_participate_to_fatlink = AddFatParticipation.Field()
     fat_create_fatlink = CreateFatlink.Field()
     fat_remove_char_fat = RemoveCharFatlink.Field()
     fat_delete_fatlink = DeleteFatlink.Field()

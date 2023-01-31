@@ -10,11 +10,9 @@ from django.db.models import Count
 
 from allianceauth.fleetactivitytracking.models import Fatlink, Fat
 from allianceauth.fleetactivitytracking.views import MemberStat, first_day_of_next_month, CorpStat
-from allianceauth.authentication.models import CharacterOwnership
 from allianceauth.eveonline.models import EveCorporationInfo, EveCharacter
 
 from .types import FatlinkType, FatType, FatUserStatsType, FatCorpStatsType, FatPersonalStatsType, FatPersonalMonthlyStatsType
-
 
 User = get_user_model()
 
@@ -42,24 +40,23 @@ class Query:
         start_of_month = datetime.datetime(year, month, 1)
         start_of_next_month = first_day_of_next_month(year, month)
 
-        corp_members = CharacterOwnership.objects.filter(character__corporation_id=corp_id).order_by('user_id').values('user_id').distinct()
+        users = User.objects.select_related('profile__main_character').filter(character_ownerships__character__corporation_id=corp_id).distinct()
 
-        fat_stats = {}
+        stat_list = []
 
-        for member in corp_members:
-            try:
-                fat_stats[member['user_id']] = MemberStat(User.objects.get(pk=member['user_id']), start_of_month, start_of_next_month)
-            except ObjectDoesNotExist:
-                continue
+        for member in users:
+            stat = MemberStat(member, start_of_month, start_of_next_month)
+            stat_list.append(
+                {
+                    'user': member,
+                    'num_chars': stat.n_chars,
+                    'num_fats': stat.n_fats,
+                    'avg_fats': stat.avg_fat
+                }
+            )
 
-        stat_list = [{
-            'user': x.mainchar.character_ownership.user,
-            'num_chars': x.n_chars,
-            'num_fats': x.n_fats,
-            'average_fats': x.avg_fat
-        } for x in fat_stats]
         stat_list.sort(key=lambda stat: stat['user'].profile.main_character.character_name)
-        stat_list.sort(key=lambda stat: (stat['num_fats'], stat['avg_fat']), reverse=True)
+        stat_list.sort(key=lambda stat: (stat['num_fats'], stat['avg_fats']), reverse=True)
 
         return stat_list
 
@@ -69,39 +66,35 @@ class Query:
         start_of_month = datetime.datetime(year, month, 1)
         start_of_next_month = first_day_of_next_month(year, month)
 
-        fat_stats = {}
+        stat_list = []
 
         for corp in EveCorporationInfo.objects.all():
-            fat_stats[corp.corporation_id] = CorpStat(corp.corporation_id, start_of_month, start_of_next_month)
+            stat = CorpStat(corp.corporation_id, start_of_month, start_of_next_month)
+            stat_list.append(
+                {
+                    'corporation': corp,
+                    'num_fats': stat.n_fats,
+                    'avg_fats': stat.avg_fat
+                }
+            )
 
-        # get FAT stats for corps without models
-        fats_in_span = Fat.objects.filter(fatlink__fatdatetime__gte=start_of_month).filter(
-            fatlink__fatdatetime__lt=start_of_next_month).exclude(character__corporation_id__in=fat_stats)
-
-        for fat in fats_in_span.exclude(character__corporation_id__in=fat_stats):
-            if EveCorporationInfo.objects.filter(corporation_id=fat.character.corporation_id).exists():
-                fat_stats[fat.character.corporation_id] = CorpStat(fat.character.corporation_id, start_of_month, start_of_next_month)
-
-        # collect and sort stats
-        stat_list = [{
-            'corporation': x.corp,
-            'num_fats': x.n_fats,
-            'avg_fats': x.avg_fat,
-        } for x in fat_stats]
+        # sort stats
         stat_list.sort(key=lambda stat: stat['corporation'].corporation_name)
-        stat_list.sort(key=lambda stat: (stat['num_fats'], stat['avg_fat']), reverse=True)
+        stat_list.sort(key=lambda stat: (stat['num_fats'], stat['avg_fats']), reverse=True)
 
         return stat_list
 
     @login_required
     def resolve_fat_personal_stats(self, info):
         # my optimized code
-        return Fat.objects.filter(user=info.context.user)\
-            .annotate(month=ExtractMonth('fatlink__fatdatetime'))\
-            .annotate(year=ExtractYear('fatlink__fatdatetime'))\
-            .values('month', 'year')\
-            .annotate(num_fats=Count('*'))\
+        return (
+            Fat.objects.filter(user=info.context.user)
+            .annotate(month=ExtractMonth('fatlink__fatdatetime'))
+            .annotate(year=ExtractYear('fatlink__fatdatetime'))
+            .values('month', 'year')
+            .annotate(num_fats=Count('*'))
             .order_by('-year', '-month')
+        )
 
     @login_required
     def resolve_fat_personal_monthly_stats(self, info, year, month, char_id=None):

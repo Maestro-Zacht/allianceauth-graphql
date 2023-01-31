@@ -54,7 +54,7 @@ class AddGroupRequest(graphene.Mutation):
             ok = True
         elif GroupRequest.objects.filter(user=user, group=group).exists():
             logger.info(f"{user} attempted to join {group} but already has an open application")
-            status = GroupRequestAddStatus.ALREADY_MEMBER
+            status = GroupRequestAddStatus.ALREADY_APPLIED
             ok = False
         else:
             grouprequest = GroupRequest()
@@ -112,6 +112,8 @@ class LeaveGroupRequest(graphene.Mutation):
             log = RequestLog(request_type=True, group=group, request_info=request_info, action=1, request_actor=user)
             log.save()
             user.groups.remove(group)
+            ok = True
+            status = GroupRequestLeaveStatus.LEFT
         else:
             grouprequest = GroupRequest()
             grouprequest.group = group
@@ -185,35 +187,42 @@ class GroupMembershipAcceptRequest(graphene.Mutation):
         error = None
         logger.debug(f"group_accept_request called by user {user} for grouprequest id {group_request_id}")
         try:
-            group_request = GroupRequest.objects.get(id=group_request_id)
+            group_request = (
+                GroupRequest.objects
+                .select_related('group', 'user__profile__state')
+                .get(id=group_request_id)
+            )
         except GroupRequest.DoesNotExist:
             error = "Group request doesn't exist"
             ok = False
         else:
             try:
-                group, created = Group.objects.get_or_create(name=group_request.group.name)
-
                 if not GroupManager.joinable_group(group_request.group, group_request.user.profile.state) or \
                         not GroupManager.can_manage_group(user, group_request.group):
+                    logger.warning(f"User {user} attempted to accept group join request {group_request_id} but permission was denied")
                     error = "Permission denied"
                     ok = False
                 else:
-                    group_request.user.groups.add(group)
-                    group_request.user.save()
-                    log = RequestLog(request_type=group_request.leave_request, group=group, request_info=group_request.__str__(), action=1, request_actor=user)
-                    log.save()
+                    group_request.user.groups.add(group_request.group)
+                    RequestLog.objects.create(
+                        request_type=group_request.leave_request,
+                        group=group_request.group,
+                        request_info=str(group_request),
+                        action=1,
+                        request_actor=user
+                    )
+
                     group_request.delete()
-                    logger.info("User {} accepted group request from user {} to group {}".format(
-                        user, group_request.user, group_request.group.name))
-                    notify(group_request.user, "Group Application Accepted", level="success",
-                           message="Your application to %s has been accepted." % group_request.group)
-            except PermissionDenied as p:
-                logger.warning(f"User {user} attempted to accept group join request {group_request_id} but permission was denied")
-                error = "Permission denied"
-                ok = False
+                    logger.info(f"User {user} accepted group request from user {group_request.user} to group {group_request.group.name}")
+                    notify(
+                        group_request.user,
+                        "Group Application Accepted",
+                        level="success",
+                        message=f"Your application to {group_request.group} has been accepted."
+                    )
             except:
-                error = 'An unhandled error occurred while processing the application from %(mainchar)s to %(group)s.' % {"mainchar": group_request.main_char, "group": group_request.group}
-                logger.exception("Unhandled exception occurred while user {} attempting to accept grouprequest id {}.".format(user, group_request_id))
+                error = f'An unhandled error occurred while processing the application from {group_request.main_char} to {group_request.group}.'
+                logger.exception(f"Unhandled exception occurred while user {user} attempting to accept grouprequest id {group_request_id}.")
                 ok = False
 
         return cls(ok=ok, error=error)
@@ -236,30 +245,39 @@ class GroupMembershipRejectRequest(graphene.Mutation):
 
         logger.debug(f"group_reject_request called by user {user} for group request id {group_request_id}")
         try:
-            group_request = GroupRequest.objects.get(id=group_request_id)
+            group_request = (
+                GroupRequest.objects
+                .select_related('group', 'user')
+                .get(id=group_request_id)
+            )
         except GroupRequest.DoesNotExist:
             error = "Group request doesn't exist"
             ok = False
         else:
             try:
                 if not GroupManager.can_manage_group(user, group_request.group):
+                    logger.warning(f"User {user} attempted to reject group join request {group_request_id} but permission was denied")
                     error = "Permission denied"
                     ok = False
                 else:
-                    logger.info("User {} rejected group request from user {} to group {}".format(
-                        user, group_request.user, group_request.group.name))
-                    log = RequestLog(request_type=group_request.leave_request, group=group_request.group, request_info=group_request.__str__(), action=0, request_actor=user)
-                    log.save()
+                    logger.info(f"User {user} rejected group request from user {group_request.user} to group {group_request.group.name}")
+                    RequestLog.objects.create(
+                        request_type=group_request.leave_request,
+                        group=group_request.group,
+                        request_info=str(group_request),
+                        action=0,
+                        request_actor=user
+                    )
                     group_request.delete()
-                    notify(group_request.user, "Group Application Rejected", level="danger", message="Your application to %s has been rejected." % group_request.group)
-
-            except PermissionDenied as p:
-                logger.warning(f"User {user} attempted to reject group join request {group_request_id} but permission was denied")
-                error = "Permission denied"
-                ok = False
+                    notify(
+                        group_request.user,
+                        "Group Application Rejected",
+                        level="danger",
+                        message=f"Your application to {group_request.group} has been rejected."
+                    )
             except:
-                error = 'An unhandled error occurred while processing the application from %(mainchar)s to %(group)s.' % {"mainchar": group_request.main_char, "group": group_request.group}
-                logger.exception("Unhandled exception occurred while user {} attempting to accept grouprequest id {}.".format(user, group_request_id))
+                error = f'An unhandled error occurred while processing the application from {group_request.main_char} to {group_request.group}.'
+                logger.exception(f"Unhandled exception occurred while user {user} attempting to accept grouprequest id {group_request_id}.")
                 ok = False
 
         return cls(ok=ok, error=error)
@@ -279,36 +297,42 @@ class GroupLeaveAcceptRequest(graphene.Mutation):
         user = info.context.user
         ok = True
         error = None
-        logger.debug(
-            f"group_leave_accept_request called by user {user} for group request id {group_request_id}")
+        logger.debug(f"group_leave_accept_request called by user {user} for group request id {group_request_id}")
         try:
-            group_request = GroupRequest.objects.get(id=group_request_id)
+            group_request = (
+                GroupRequest.objects
+                .select_related('group', 'user')
+                .get(id=group_request_id)
+            )
         except GroupRequest.DoesNotExist:
             error = "Group request doesn't exist"
             ok = False
         else:
             try:
                 if not GroupManager.can_manage_group(user, group_request.group):
+                    logger.warning(f"User {user} attempted to accept group leave request {group_request_id} but permission was denied")
                     error = "Permission denied"
                     ok = False
                 else:
-                    group, created = Group.objects.get_or_create(name=group_request.group.name)
-                    group_request.user.groups.remove(group)
-                    group_request.user.save()
-                    log = RequestLog(request_type=group_request.leave_request, group=group_request.group, request_info=group_request.__str__(), action=1, request_actor=user)
-                    log.save()
+                    group_request.user.groups.remove(group_request.group)
+                    RequestLog.objects.create(
+                        request_type=group_request.leave_request,
+                        group=group_request.group,
+                        request_info=str(group_request),
+                        action=1,
+                        request_actor=user
+                    )
                     group_request.delete()
-                    logger.info("User {} accepted group leave request from user {} to group {}".format(
-                        user, group_request.user, group_request.group.name))
-                    notify(group_request.user, "Group Leave Request Accepted", level="success",
-                           message="Your request to leave %s has been accepted." % group_request.group)
-            except PermissionDenied as p:
-                logger.warning(f"User {user} attempted to accept group leave request {group_request_id} but permission was denied")
-                error = "Permission denied"
-                ok = False
+                    logger.info(f"User {user} accepted group leave request from user {group_request.user} to group {group_request.group.name}")
+                    notify(
+                        group_request.user,
+                        "Group Leave Request Accepted",
+                        level="success",
+                        message=f"Your request to leave {group_request.group} has been accepted."
+                    )
             except:
-                error = 'An unhandled error occurred while processing the application from %(mainchar)s to %(group)s.' % {"mainchar": group_request.main_char, "group": group_request.group}
-                logger.exception("Unhandled exception occurred while user {} attempting to accept grouprequest id {}.".format(user, group_request_id))
+                error = f'An unhandled error occurred while processing the application from {group_request.main_char} to {group_request.group}.'
+                logger.exception(f"Unhandled exception occurred while user {user} attempting to accept grouprequest id {group_request_id}.")
                 ok = False
 
         return cls(ok=ok, error=error)
@@ -329,32 +353,41 @@ class GroupLeaveRejectRequest(graphene.Mutation):
         ok = True
         error = None
 
-        logger.debug(
-            f"group_leave_reject_request called by user {user} for group request id {group_request_id}")
+        logger.debug(f"group_leave_reject_request called by user {user} for group request id {group_request_id}")
         try:
-            group_request = GroupRequest.objects.get(id=group_request_id)
+            group_request = (
+                GroupRequest.objects
+                .select_related('group', 'user')
+                .get(id=group_request_id)
+            )
         except GroupRequest.DoesNotExist:
             error = "Group request doesn't exist"
             ok = False
         else:
             try:
                 if not GroupManager.can_manage_group(user, group_request.group):
+                    logger.warning(f"User {user} attempted to reject group leave request {group_request_id} but permission was denied")
                     error = "Permission denied"
                     ok = False
                 else:
-                    log = RequestLog(request_type=group_request.leave_request, group=group_request.group, request_info=group_request.__str__(), action=0, request_actor=user)
-                    log.save()
+                    RequestLog.objects.create(
+                        request_type=group_request.leave_request,
+                        group=group_request.group,
+                        request_info=str(group_request),
+                        action=0,
+                        request_actor=user
+                    )
                     group_request.delete()
-                    logger.info("User {} rejected group leave request from user {} for group {}".format(
-                        user, group_request.user, group_request.group.name))
-                    notify(group_request.user, "Group Leave Request Rejected", level="danger", message="Your request to leave %s has been rejected." % group_request.group)
-            except PermissionDenied as p:
-                logger.warning(f"User {user} attempted to reject group leave request {group_request_id} but permission was denied")
-                error = "Permission denied"
-                ok = False
+                    logger.info(f"User {user} rejected group leave request from user {group_request.user} for group {group_request.group.name}")
+                    notify(
+                        group_request.user,
+                        "Group Leave Request Rejected",
+                        level="danger",
+                        message=f"Your request to leave {group_request.group} has been rejected."
+                    )
             except:
-                error = 'An unhandled error occurred while processing the application from %(mainchar)s to %(group)s.' % {"mainchar": group_request.main_char, "group": group_request.group}
-                logger.exception("Unhandled exception occurred while user {} attempting to accept grouprequest id {}.".format(user, group_request_id))
+                error = f'An unhandled error occurred while processing the application from {group_request.main_char} to {group_request.group}.'
+                logger.exception(f"Unhandled exception occurred while user {user} attempting to accept grouprequest id {group_request_id}.")
                 ok = False
 
         return cls(ok=ok, error=error)
@@ -367,3 +400,4 @@ class Mutation:
     group_membership_accept_request = GroupMembershipAcceptRequest.Field()
     group_membership_reject_request = GroupMembershipRejectRequest.Field()
     group_leave_accept_request = GroupLeaveAcceptRequest.Field()
+    group_leave_reject_request = GroupLeaveRejectRequest.Field()

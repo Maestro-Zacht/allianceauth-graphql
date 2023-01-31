@@ -72,3 +72,4 @@ class Mutation:
     notif_mark_as_read = MarkNotifReadMutation.Field()
     notif_delete = DeleteNotificationMutation.Field()
     notif_mark_all_read = AllReadMutation.Field()
+    notif_delete_all_read = DeleteAllReadMutation.Field()

@@ -22,9 +22,7 @@ REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 class EsiTokenAuthMutation(graphene.Mutation):
     """Login Mutation
 
-    Receives the esi code from callback and provides a token:
-    in case the status is "LOGIN", the token is for the Authorization header (Authorization: JWT <token>);
-    in case the status is "REGISTRATION", the token is for the RegistrationMutation mutation argument.
+    Receives the esi code from callback and provides the JWT token (Authorization: JWT <token>)
     """
     me = graphene.Field(UserType)
     token = graphene.String()
@@ -52,10 +50,14 @@ class EsiTokenAuthMutation(graphene.Mutation):
             if user.is_active:
                 status = LoginStatus.LOGGED_IN
             elif not user.email:
-                status = LoginStatus.REGISTRATION
                 if getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
                     info.context.session.update({'registration_uid': user.pk})
                     info.context.session.save()
+                    status = LoginStatus.REGISTRATION
+                else:
+                    status = LoginStatus.LOGGED_IN
+                    user.is_active = True
+                    user.save()
             else:
                 errors.append('Unable to authenticate the selected character')
 
@@ -65,13 +67,6 @@ class EsiTokenAuthMutation(graphene.Mutation):
         if status == LoginStatus.LOGGED_IN:
             token = get_token(user)
             refresh_token = create_refresh_token(user).get_token()
-        elif status == LoginStatus.REGISTRATION and not getattr(settings, 'REGISTRATION_VERIFY_EMAIL', True):
-            token = get_token(user)
-            refresh_token = create_refresh_token(user).get_token()
-            status = LoginStatus.LOGGED_IN
-        elif status == LoginStatus.REGISTRATION:
-            refresh_token = None
-            token = signing.dumps(user.pk)
         else:
             token = refresh_token = None
 
@@ -96,40 +91,49 @@ class RegistrationMutation(DjangoFormMutation):
     errors = graphene.List(graphene.String)
 
     @classmethod
-    def perform_mutate(cls, form, info):
+    def perform_mutate(cls, form: EmailRegistrationForm, info):
         errors = []
-        user_id = signing.loads(form.data['token'])
-        email = form.data['email']
+        user_id = info.context.session.get('registration_uid', None)
+        site = getattr(settings, 'REDIRECT_SITE', None)
 
-        site = getattr(settings, 'REDIRECT_SITE')
+        if user_id is None:
+            errors.append('You need to do the token registration step first!')
 
-        activation_key = signing.dumps([user_id, email], salt=REGISTRATION_SALT)
+        if site is None:
+            errors.append('Redirect site not specified in settings!')
 
-        full_url = info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email')) + f"?activation_key={activation_key}"
+        ok = len(errors) == 0
 
-        send_mail(
-            f'Account activation for {site}',
-            f"""< p >
-            You're receiving this email because someone has entered this email address while registering for an account on {site}
-            < /p >
+        if ok:
+            email = form.cleaned_data['email']
 
-            < p >
-            If this was you, please click on the link below to confirm your email address:
-            < p >
+            activation_key = signing.dumps([user_id, email], salt=REGISTRATION_SALT)
 
-            < p >
-            < a href="{full_url}" > Confirm email address < /a >
-            < / p >
+            full_url = info.context.build_absolute_uri(reverse('allianceauth_graphql:verify_email')) + f"?activation_key={activation_key}"
 
-            < p >
-            If this was not you, it is safe to ignore this email.
-            < /p >""",
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False
-        )
+            send_mail(
+                f'Account activation for {site}',
+                f"""< p >
+                You're receiving this email because someone has entered this email address while registering for an account on {site}
+                < /p >
 
-        return cls(ok=True, errors=errors, **form.data)
+                < p >
+                If this was you, please click on the link below to confirm your email address:
+                < p >
+
+                < p >
+                < a href="{full_url}" > Confirm email address < /a >
+                < / p >
+
+                < p >
+                If this was not you, it is safe to ignore this email.
+                < /p >""",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False
+            )
+
+        return cls(ok=ok, errors=errors, **form.data)
 
 
 class ChangeMainCharacterMutation(graphene.Mutation):
@@ -148,7 +152,7 @@ class ChangeMainCharacterMutation(graphene.Mutation):
         errors = []
         user = info.context.user
         try:
-            co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=info.context.user)
+            co = CharacterOwnership.objects.get(character__character_id=new_main_character_id, user=user)
             ok = True
         except CharacterOwnership.DoesNotExist:
             ok = False

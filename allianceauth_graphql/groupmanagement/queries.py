@@ -63,15 +63,13 @@ class Query:
         acceptrequests = []
         leaverequests = []
 
-        base_group_query = GroupRequest.objects.select_related('user', 'group', 'user__profile__main_character')
-
         if GroupManager.has_management_permission(user):
             # Full access
-            group_requests = base_group_query.all()
+            group_requests = GroupRequest.objects.all()
         else:
             # Group specific leader
             users__groups = GroupManager.get_group_leaders_groups(user)
-            group_requests = base_group_query.filter(group__in=users__groups)
+            group_requests = GroupRequest.objects.filter(group__in=users__groups)
 
         for grouprequest in group_requests:
             if grouprequest.leave_request:
@@ -100,7 +98,12 @@ class Query:
             # Group leader specific
             groups = GroupManager.get_group_leaders_groups(user)
 
-        return groups.exclude(authgroup__internal=True).annotate(num_members=Count('user')).order_by('name')
+        return (
+            groups
+            .exclude(authgroup__internal=True)
+            .annotate(num_members=Count('user'))
+            .order_by('name')
+        )
 
     @login_required
     @user_passes_test(GroupManager.can_manage_groups)
@@ -112,8 +115,8 @@ class Query:
             # Check its a joinable group i.e. not corp or internal
             # And the user has permission to manage it
             if (not GroupManager.check_internal_group(group)
-                    or not GroupManager.can_manage_group(user, group)
-                    ):
+                or not GroupManager.can_manage_group(user, group)
+                ):
                 logger.warning(
                     "User %s attempted to view the membership of group %s "
                     "but permission was denied" % (user, group_id)
@@ -155,4 +158,4 @@ class Query:
 
         entries = RequestLog.objects.filter(group=group).order_by('-date')
 
-        return {'group': group.name, 'entries': entries}
+        return {'group': group, 'entries': entries}

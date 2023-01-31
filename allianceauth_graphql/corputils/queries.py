@@ -15,14 +15,14 @@ class Query:
     @login_required
     @user_passes_test(access_corpstats_test)
     def resolve_get_corpstats(self, info):
-        return CorpStats.objects.visible_to(info.context.user).order_by('corp__corporation_name').select_related('corp')
+        return CorpStats.objects.visible_to(info.context.user).order_by('corp__corporation_name')
 
     @login_required
     @user_passes_test(access_corpstats_test)
     def resolve_get_corpstats_corp(self, info, corp_id):
         avaiable = CorpStats.objects.visible_to(info.context.user)
         stats = CorpStats.objects.get(corp__corporation_id=corp_id)
-        if stats in avaiable:
+        if avaiable.filter(pk=stats.pk).exists():
             return stats
 
     @login_required
