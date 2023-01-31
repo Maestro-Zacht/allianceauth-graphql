@@ -54,7 +54,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         )
 
         content = json.loads(response.content)
-        token = content['data']['tokenAuth']['token']
+        token = content['data']['esiTokenAuth']['token']
 
         self.assertJSONEqual(
             response.content,
