@@ -91,7 +91,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                userJoinableGroups {
+                groupmanagementUserJoinableGroups {
                     id
                     status
                 }
@@ -103,7 +103,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "userJoinableGroups": [
+                    "groupmanagementUserJoinableGroups": [
                         {
                             "id": str(self.group1.id),
                             "status": GroupStatusEnum.PENDING.name,
@@ -123,7 +123,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                groupManagement {
+                groupmanagementManageRequests {
                     leaveRequests {
                         group {
                             id
@@ -149,7 +149,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupManagement": {
+                    "groupmanagementManageRequests": {
                         "leaveRequests": [
                             {
                                 "group": {
@@ -181,7 +181,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                groupManagement {
+                groupmanagementManageRequests {
                     leaveRequests {
                         group {
                             id
@@ -207,7 +207,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupManagement": {
+                    "groupmanagementManageRequests": {
                         "leaveRequests": [
                             {
                                 "group": {
@@ -230,7 +230,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                groupMembership {
+                groupmanagementGroups {
                     id
                     numMembers
                 }
@@ -242,7 +242,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembership": [
+                    "groupmanagementGroups": [
                         {
                             "id": str(self.group1.id),
                             "numMembers": 0,
@@ -262,7 +262,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                groupMembership {
+                groupmanagementGroups {
                     id
                     numMembers
                 }
@@ -274,7 +274,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembership": [
+                    "groupmanagementGroups": [
                         {
                             'id': str(self.group2.id),
                             'numMembers': 2,
@@ -290,7 +290,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipList(groupId: $groupId) {
+                groupmanagementGroupMemberships(groupId: $groupId) {
                     group {
                         id
                     }
@@ -312,7 +312,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipList": {
+                    "groupmanagementGroupMemberships": {
                         'group': {
                             'id': str(self.group2.id),
                         },
@@ -335,7 +335,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipList(groupId: $groupId) {
+                groupmanagementGroupMemberships(groupId: $groupId) {
                     group {
                         id
                     }
@@ -357,7 +357,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipList": None
+                    "groupmanagementGroupMemberships": None
                 },
                 "errors": [
                     {
@@ -369,7 +369,7 @@ class TestQueries(GraphQLTestCase):
                             }
                         ],
                         "path": [
-                            "groupMembershipList"
+                            "groupmanagementGroupMemberships"
                         ]
                     }
                 ]
@@ -382,7 +382,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipList(groupId: $groupId) {
+                groupmanagementGroupMemberships(groupId: $groupId) {
                     group {
                         id
                     }
@@ -404,7 +404,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipList": None
+                    "groupmanagementGroupMemberships": None
                 },
                 "errors": [
                     {
@@ -416,7 +416,7 @@ class TestQueries(GraphQLTestCase):
                             }
                         ],
                         "path": [
-                            "groupMembershipList"
+                            "groupmanagementGroupMemberships"
                         ]
                     }
                 ]
@@ -429,7 +429,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipAudit(groupId: $groupId) {
+                groupmanagementGroupMembershipAudit(groupId: $groupId) {
                     group {
                         id
                     }
@@ -452,7 +452,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAudit": {
+                    "groupmanagementGroupMembershipAudit": {
                         'group': {
                             'id': str(self.group1.id),
                         },
@@ -490,7 +490,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipAudit(groupId: $groupId) {
+                groupmanagementGroupMembershipAudit(groupId: $groupId) {
                     group {
                         id
                     }
@@ -513,7 +513,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAudit": None
+                    "groupmanagementGroupMembershipAudit": None
                 },
                 "errors": [
                     {
@@ -525,7 +525,7 @@ class TestQueries(GraphQLTestCase):
                             }
                         ],
                         "path": [
-                            "groupMembershipAudit"
+                            "groupmanagementGroupMembershipAudit"
                         ]
                     }
                 ]
@@ -538,7 +538,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query($groupId: Int!) {
-                groupMembershipAudit(groupId: $groupId) {
+                groupmanagementGroupMembershipAudit(groupId: $groupId) {
                     group {
                         id
                     }
@@ -561,7 +561,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAudit": None
+                    "groupmanagementGroupMembershipAudit": None
                 },
                 "errors": [
                     {
@@ -573,7 +573,7 @@ class TestQueries(GraphQLTestCase):
                             }
                         ],
                         "path": [
-                            "groupMembershipAudit"
+                            "groupmanagementGroupMembershipAudit"
                         ]
                     }
                 ]
@@ -606,7 +606,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -621,7 +621,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": True,
                         "status": GroupRequestAddStatus.APPLIED.name,
                     }
@@ -640,7 +640,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -655,7 +655,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": True,
                         "status": GroupRequestAddStatus.JOINED.name,
                     }
@@ -676,7 +676,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -691,7 +691,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": False,
                         "status": GroupRequestAddStatus.CANNOT_JOIN.name,
                     }
@@ -709,7 +709,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -724,7 +724,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": False,
                         "status": GroupRequestAddStatus.ALREADY_MEMBER.name,
                     }
@@ -743,7 +743,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -758,7 +758,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": False,
                         "status": GroupRequestAddStatus.CANNOT_JOIN.name,
                     }
@@ -779,7 +779,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                addGroupRequest(groupId: $groupId) {
+                groupmanagementJoinGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -794,7 +794,7 @@ class TestAddGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "addGroupRequest": {
+                    "groupmanagementJoinGroupRequest": {
                         "ok": False,
                         "status": GroupRequestAddStatus.ALREADY_APPLIED.name,
                     }
@@ -830,7 +830,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -845,7 +845,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": True,
                         "status": GroupRequestLeaveStatus.CREATED_LEAVE_REQUEST.name,
                     }
@@ -864,7 +864,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -879,7 +879,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": True,
                         "status": GroupRequestLeaveStatus.LEFT.name,
                     }
@@ -899,7 +899,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -914,7 +914,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": False,
                         "status": GroupRequestLeaveStatus.CANNOT_LEAVE.name,
                     }
@@ -932,7 +932,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -947,7 +947,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": False,
                         "status": GroupRequestLeaveStatus.NOT_MEMBER.name,
                     }
@@ -968,7 +968,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -983,7 +983,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": False,
                         "status": GroupRequestLeaveStatus.PENDING_LEAVE_REQUEST.name,
                     }
@@ -1000,7 +1000,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!) {
-                leaveGroupRequest(groupId: $groupId) {
+                groupmanagementLeaveGroupRequest(groupId: $groupId) {
                     ok
                     status
                 }
@@ -1015,7 +1015,7 @@ class TestLeaveGroupRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "leaveGroupRequest": {
+                    "groupmanagementLeaveGroupRequest": {
                         "ok": True,
                         "status": GroupRequestLeaveStatus.LEFT.name,
                     }
@@ -1055,7 +1055,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!, $userId: Int!) {
-                groupMembershipRemove(groupId: $groupId, userId: $userId) {
+                groupmanagementRemoveMember(groupId: $groupId, userId: $userId) {
                     ok
                     error
                 }
@@ -1071,7 +1071,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRemove": {
+                    "groupmanagementRemoveMember": {
                         "ok": True,
                         "error": None,
                     }
@@ -1091,7 +1091,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!, $userId: Int!) {
-                groupMembershipRemove(groupId: $groupId, userId: $userId) {
+                groupmanagementRemoveMember(groupId: $groupId, userId: $userId) {
                     ok
                     error
                 }
@@ -1107,7 +1107,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRemove": {
+                    "groupmanagementRemoveMember": {
                         "ok": False,
                         "error": 'Permission denied',
                     }
@@ -1125,7 +1125,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!, $userId: Int!) {
-                groupMembershipRemove(groupId: $groupId, userId: $userId) {
+                groupmanagementRemoveMember(groupId: $groupId, userId: $userId) {
                     ok
                     error
                 }
@@ -1141,7 +1141,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRemove": {
+                    "groupmanagementRemoveMember": {
                         "ok": False,
                         "error": "User does not exist in that group",
                     }
@@ -1157,7 +1157,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupId: Int!, $userId: Int!) {
-                groupMembershipRemove(groupId: $groupId, userId: $userId) {
+                groupmanagementRemoveMember(groupId: $groupId, userId: $userId) {
                     ok
                     error
                 }
@@ -1173,7 +1173,7 @@ class TestGroupMembershipRemove(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRemove": {
+                    "groupmanagementRemoveMember": {
                         "ok": False,
                         "error": "Group does not exist",
                     }
@@ -1214,7 +1214,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1229,7 +1229,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAcceptRequest": {
+                    "groupmanagementAcceptJoinRequest": {
                         "ok": True,
                         "error": None,
                     }
@@ -1246,7 +1246,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1261,7 +1261,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAcceptRequest": {
+                    "groupmanagementAcceptJoinRequest": {
                         "ok": False,
                         "error": "Group request doesn't exist",
                     }
@@ -1278,7 +1278,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1293,7 +1293,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAcceptRequest": {
+                    "groupmanagementAcceptJoinRequest": {
                         "ok": False,
                         "error": 'Permission denied',
                     }
@@ -1314,7 +1314,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1329,7 +1329,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipAcceptRequest": {
+                    "groupmanagementAcceptJoinRequest": {
                         "ok": False,
                         "error": f'An unhandled error occurred while processing the application from {self.request.main_char} to {self.request.group}.',
                     }
@@ -1350,7 +1350,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1365,7 +1365,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRejectRequest": {
+                    "groupmanagementRejectJoinRequest": {
                         "ok": True,
                         "error": None,
                     }
@@ -1383,7 +1383,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1398,7 +1398,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRejectRequest": {
+                    "groupmanagementRejectJoinRequest": {
                         "ok": False,
                         "error": "Group request doesn't exist",
                     }
@@ -1415,7 +1415,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1430,7 +1430,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRejectRequest": {
+                    "groupmanagementRejectJoinRequest": {
                         "ok": False,
                         "error": 'Permission denied',
                     }
@@ -1451,7 +1451,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupMembershipRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectJoinRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1466,7 +1466,7 @@ class TestGroupMembershipAcceptAndRejectRequestMutations(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupMembershipRejectRequest": {
+                    "groupmanagementRejectJoinRequest": {
                         "ok": False,
                         "error": f'An unhandled error occurred while processing the application from {self.request.main_char} to {self.request.group}.',
                     }
@@ -1515,7 +1515,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1530,7 +1530,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveAcceptRequest": {
+                    "groupmanagementAcceptLeaveRequest": {
                         "ok": True,
                         "error": None,
                     }
@@ -1548,7 +1548,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1563,7 +1563,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveAcceptRequest": {
+                    "groupmanagementAcceptLeaveRequest": {
                         "ok": False,
                         "error": "Group request doesn't exist",
                     }
@@ -1580,7 +1580,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1595,7 +1595,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveAcceptRequest": {
+                    "groupmanagementAcceptLeaveRequest": {
                         "ok": False,
                         "error": 'Permission denied',
                     }
@@ -1616,7 +1616,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveAcceptRequest(groupRequestId: $groupRequestId) {
+                groupmanagementAcceptLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1631,7 +1631,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveAcceptRequest": {
+                    "groupmanagementAcceptLeaveRequest": {
                         "ok": False,
                         "error": f'An unhandled error occurred while processing the application from {self.request.main_char} to {self.request.group}.',
                     }
@@ -1651,7 +1651,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1666,7 +1666,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveRejectRequest": {
+                    "groupmanagementRejectLeaveRequest": {
                         "ok": True,
                         "error": None,
                     }
@@ -1684,7 +1684,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1699,7 +1699,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveRejectRequest": {
+                    "groupmanagementRejectLeaveRequest": {
                         "ok": False,
                         "error": "Group request doesn't exist",
                     }
@@ -1716,7 +1716,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1731,7 +1731,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveRejectRequest": {
+                    "groupmanagementRejectLeaveRequest": {
                         "ok": False,
                         "error": 'Permission denied',
                     }
@@ -1752,7 +1752,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation($groupRequestId: Int!) {
-                groupLeaveRejectRequest(groupRequestId: $groupRequestId) {
+                groupmanagementRejectLeaveRequest(groupRequestId: $groupRequestId) {
                     ok
                     error
                 }
@@ -1767,7 +1767,7 @@ class TestGroupLeaveAcceptAndRejectRequestMutation(GraphQLTestCase):
             response.content,
             {
                 "data": {
-                    "groupLeaveRejectRequest": {
+                    "groupmanagementRejectLeaveRequest": {
                         "ok": False,
                         "error": f'An unhandled error occurred while processing the application from {self.request.main_char} to {self.request.group}.',
                     }

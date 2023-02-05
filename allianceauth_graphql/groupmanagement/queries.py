@@ -19,14 +19,14 @@ logger = get_extension_logger(__name__)
 
 
 class Query:
-    user_joinable_groups = graphene.List(GroupType)
-    group_management = graphene.Field(GroupManagementType)
-    group_membership = graphene.List(GroupType)
-    group_membership_list = graphene.Field(GroupMembershipListType, group_id=graphene.Int(required=True))
-    group_membership_audit = graphene.Field(GroupMembershipAuditType, group_id=graphene.Int(required=True))
+    groupmanagement_user_joinable_groups = graphene.List(GroupType)
+    groupmanagement_manage_requests = graphene.Field(GroupManagementType)
+    groupmanagement_groups = graphene.List(GroupType)
+    groupmanagement_group_memberships = graphene.Field(GroupMembershipListType, group_id=graphene.Int(required=True))
+    groupmanagement_group_membership_audit = graphene.Field(GroupMembershipAuditType, group_id=graphene.Int(required=True))
 
     @login_required
-    def resolve_user_joinable_groups(self, info):
+    def resolve_groupmanagement_user_joinable_groups(self, info):
         user = info.context.user
         groups_qs = GroupManager.get_joinable_groups_for_user(user, include_hidden=False).order_by('name')
 
@@ -57,9 +57,9 @@ class Query:
 
     @login_required
     @user_passes_test(GroupManager.can_manage_groups)
-    def resolve_group_management(self, info):
+    def resolve_groupmanagement_manage_requests(self, info):
         user = info.context.user
-        logger.debug("group_management called by user %s" % user)
+        logger.debug(f"group_management called by user {user}")
         acceptrequests = []
         leaverequests = []
 
@@ -87,9 +87,9 @@ class Query:
 
     @login_required
     @user_passes_test(GroupManager.can_manage_groups)
-    def resolve_group_membership(self, info):
+    def resolve_groupmanagement_groups(self, info):
         user = info.context.user
-        logger.debug("group_membership called by user %s" % user)
+        logger.debug(f"group_membership called by user {user}")
         # Get all open and closed groups
         if GroupManager.has_management_permission(user):
             # Full access
@@ -107,7 +107,7 @@ class Query:
 
     @login_required
     @user_passes_test(GroupManager.can_manage_groups)
-    def resolve_group_membership_list(self, info, group_id):
+    def resolve_groupmanagement_group_memberships(self, info, group_id):
         user = info.context.user
         logger.debug(f"group_membership_list called by user {user} for group id {group_id}")
         try:
@@ -118,8 +118,8 @@ class Query:
                 or not GroupManager.can_manage_group(user, group)
                 ):
                 logger.warning(
-                    "User %s attempted to view the membership of group %s "
-                    "but permission was denied" % (user, group_id)
+                    f"User {user} attempted to view the membership of group {group_id} "
+                    "but permission was denied"
                 )
                 raise PermissionDenied
 
@@ -142,7 +142,7 @@ class Query:
 
     @login_required
     @user_passes_test(GroupManager.can_manage_groups)
-    def resolve_group_membership_audit(self, info, group_id):
+    def resolve_groupmanagement_group_membership_audit(self, info, group_id):
         user = info.context.user
         logger.debug("group_management_audit called by user %s" % user)
         try:
