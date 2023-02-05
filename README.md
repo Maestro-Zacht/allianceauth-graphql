@@ -3,6 +3,7 @@
 [![version](https://img.shields.io/pypi/v/allianceauth_graphql.svg)](https://pypi.python.org/pypi/allianceauth_graphql)
 [![GitHub issues](https://img.shields.io/github/issues/Maestro-Zacht/allianceauth-graphql)](https://github.com/Maestro-Zacht/allianceauth-graphql/issues)
 [![github](https://img.shields.io/badge/docs-github-brightgreen)](https://github.com/Maestro-Zacht/allianceauth-graphql)
+[![codecov](https://codecov.io/gh/Maestro-Zacht/allianceauth-graphql/branch/main/graph/badge.svg?token=S138BBQ4XA)](https://codecov.io/gh/Maestro-Zacht/allianceauth-graphql)
 
 
 GraphQL integration for AllianceAuth
@@ -11,7 +12,7 @@ GraphQL integration for AllianceAuth
 Free software: GNU General Public License v3
 
 
-This version is in alpha, please open an issue if you face any bug.
+This version is in beta, please open an issue if you face any bug.
 
 Compatibility
 =============
@@ -64,11 +65,12 @@ Install plugin
    > It should looks something like this
 
     ```python
-    from django.conf.urls import include, url
+    from django.conf.urls import include
     from allianceauth import urls
+    from django.urls import re_path
 
     urlpatterns = [
-        url(r'', include(urls)),
+        re_path(r'', include(urls)),
     ]
 
     handler500 = 'allianceauth.views.Generic500Redirect'
@@ -80,13 +82,14 @@ Install plugin
    > After the edit:
     
     ```python
-    from django.conf.urls import include, url
+    from django.conf.urls import include
     from allianceauth import urls
     from allianceauth_graphql import urls as aa_gql_urls
+    from django.urls import re_path
 
     urlpatterns = [
-        url(r'', include(urls)),
-        url(r'graphql/', include(aa_gql_urls)),
+        re_path(r'', include(urls)),
+        re_path(r'graphql/', include(aa_gql_urls)),
     ]
 
     handler500 = 'allianceauth.views.Generic500Redirect'
