@@ -102,7 +102,7 @@ class LeaveGroupRequest(graphene.Mutation):
 
             status = GroupRequestLeaveStatus.LEFT
             ok = True
-        elif GroupRequest.objects.filter(user=user, group=group):
+        elif GroupRequest.objects.filter(user=user, group=group).exists():
             logger.info(f"{user} attempted to leave {group} but already has an pending leave request.")
             status = GroupRequestLeaveStatus.PENDING_LEAVE_REQUEST
             ok = False
