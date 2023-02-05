@@ -61,5 +61,5 @@ class UpdateCorpStatsMutation(graphene.Mutation):
 
 
 class Mutation:
-    add_corpstats = AddCorpStatsMutation.Field()
-    update_corpstats = UpdateCorpStatsMutation.Field()
+    corputils_add_corpstats = AddCorpStatsMutation.Field()
+    corputils_update_corpstats = UpdateCorpStatsMutation.Field()

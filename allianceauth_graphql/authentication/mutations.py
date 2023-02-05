@@ -265,12 +265,12 @@ class RemoveEsiTokenMutation(graphene.Mutation):
 
 
 class Mutation:
-    token_auth = EsiTokenAuthMutation.Field()
-    verify_token = graphql_jwt.Verify.Field()
-    refresh_token = graphql_jwt.Refresh.Field()
-    revoke_token = graphql_jwt.Revoke.Field()
-    change_main_character = ChangeMainCharacterMutation.Field()
-    add_character = AddCharacterMutation.Field()
-    email_registration = RegistrationMutation.Field()
-    remove_esi_token = RemoveEsiTokenMutation.Field()
-    refresh_esi_token = RefreshEsiTokenMutation.Field()
+    esi_token_auth = EsiTokenAuthMutation.Field()
+    verify_jwt_token = graphql_jwt.Verify.Field()
+    refresh_jwt_token = graphql_jwt.Refresh.Field()
+    revoke_jwt_token = graphql_jwt.Revoke.Field()
+    authentication_change_main_character = ChangeMainCharacterMutation.Field()
+    authentication_add_character = AddCharacterMutation.Field()
+    authentication_email_registration = RegistrationMutation.Field()
+    esi_remove_token = RemoveEsiTokenMutation.Field()
+    esi_refresh_token = RefreshEsiTokenMutation.Field()

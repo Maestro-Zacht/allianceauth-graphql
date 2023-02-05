@@ -16,12 +16,12 @@ DEFAULT_SCOPES = getattr(settings, 'GRAPHQL_LOGIN_SCOPES', ['publicData'])
 
 
 class Query:
-    login_url = graphene.String(scopes=graphene.List(graphene.String, default_value=DEFAULT_SCOPES))
+    esi_login_url = graphene.String(scopes=graphene.List(graphene.String, default_value=DEFAULT_SCOPES))
     me = graphene.Field(UserType)
-    user_groups = graphene.List(GroupType)
-    user_characters = graphene.List(EveCharacterType, description="List of the user's alts")
+    authentication_user_groups = graphene.List(GroupType)
+    authentication_user_characters = graphene.List(EveCharacterType, description="List of the user's alts")
 
-    def resolve_login_url(self, info, scopes):
+    def resolve_esi_login_url(self, info, scopes):
         oauth = OAuth2Session(
             app_settings.ESI_SSO_CLIENT_ID,
             redirect_uri=app_settings.ESI_SSO_CALLBACK_URL,
@@ -37,7 +37,7 @@ class Query:
         return info.context.user
 
     @login_required
-    def resolve_user_groups(self, info):
+    def resolve_authentication_user_groups(self, info):
         groups = info.context.user.groups.all()
         if 'allianceauth.eveonline.autogroups' in settings.INSTALLED_APPS:
             groups = groups\
@@ -46,7 +46,9 @@ class Query:
         return groups.order_by('name').annotate(status=Value(1))
 
     @login_required
-    def resolve_user_characters(self, info):
-        return EveCharacter.objects.filter(character_ownership__user=info.context.user)\
-            .select_related()\
+    def resolve_authentication_user_characters(self, info):
+        return (
+            EveCharacter.objects
+            .filter(character_ownership__user=info.context.user)
             .order_by('character_name')
+        )

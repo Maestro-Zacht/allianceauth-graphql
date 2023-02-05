@@ -394,10 +394,10 @@ class GroupLeaveRejectRequest(graphene.Mutation):
 
 
 class Mutation:
-    add_group_request = AddGroupRequest.Field()
-    leave_group_request = LeaveGroupRequest.Field()
-    group_membership_remove = GroupMembershipRemove.Field()
-    group_membership_accept_request = GroupMembershipAcceptRequest.Field()
-    group_membership_reject_request = GroupMembershipRejectRequest.Field()
-    group_leave_accept_request = GroupLeaveAcceptRequest.Field()
-    group_leave_reject_request = GroupLeaveRejectRequest.Field()
+    groupmanagement_join_group_request = AddGroupRequest.Field()
+    groupmanagement_leave_group_request = LeaveGroupRequest.Field()
+    groupmanagement_remove_member = GroupMembershipRemove.Field()
+    groupmanagement_accept_join_request = GroupMembershipAcceptRequest.Field()
+    groupmanagement_reject_join_request = GroupMembershipRejectRequest.Field()
+    groupmanagement_accept_leave_request = GroupLeaveAcceptRequest.Field()
+    groupmanagement_reject_leave_request = GroupLeaveRejectRequest.Field()

@@ -39,7 +39,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -54,13 +54,13 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         )
 
         content = json.loads(response.content)
-        token = content['data']['tokenAuth']['token']
+        token = content['data']['esiTokenAuth']['token']
 
         self.assertJSONEqual(
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': [],
                         'status': LoginStatus.LOGGED_IN.name,
                         'me': {
@@ -104,7 +104,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -121,7 +121,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': [
                             'Unable to authenticate the selected character',
                         ],
@@ -143,7 +143,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -162,7 +162,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': [],
                         'status': LoginStatus.REGISTRATION.name,
                         'me': None,
@@ -188,7 +188,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -205,7 +205,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': [],
                         'status': LoginStatus.LOGGED_IN.name,
                         'me': {
@@ -228,7 +228,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -245,7 +245,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': [],
                         'status': LoginStatus.LOGGED_IN.name,
                         'me': {
@@ -272,7 +272,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($sso_token: String!) {
-                tokenAuth(ssoToken: $sso_token) {
+                esiTokenAuth(ssoToken: $sso_token) {
                     me {
                         id
                     }
@@ -289,7 +289,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'tokenAuth': {
+                    'esiTokenAuth': {
                         'errors': ['Unable to authenticate the selected character'],
                         'status': LoginStatus.ERROR.name,
                         'me': None
@@ -320,7 +320,7 @@ class TestRegistrationMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: RegistrationMutationInput!) {
-                emailRegistration(input: $input) {
+                authenticationEmailRegistration(input: $input) {
                     errors
                     ok
                 }
@@ -334,7 +334,7 @@ class TestRegistrationMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'emailRegistration': {
+                    'authenticationEmailRegistration': {
                         'errors': [],
                         'ok': True
                     }
@@ -351,7 +351,7 @@ class TestRegistrationMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: RegistrationMutationInput!) {
-                emailRegistration(input: $input) {
+                authenticationEmailRegistration(input: $input) {
                     errors
                     ok
                 }
@@ -365,7 +365,7 @@ class TestRegistrationMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'emailRegistration': {
+                    'authenticationEmailRegistration': {
                         'errors': ['You need to do the token registration step first!'],
                         'ok': False
                     }
@@ -385,7 +385,7 @@ class TestRegistrationMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: RegistrationMutationInput!) {
-                emailRegistration(input: $input) {
+                authenticationEmailRegistration(input: $input) {
                     errors
                     ok
                 }
@@ -399,7 +399,7 @@ class TestRegistrationMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'emailRegistration': {
+                    'authenticationEmailRegistration': {
                         'errors': ['Redirect site not specified in settings!'],
                         'ok': False
                     }
@@ -427,7 +427,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                changeMainCharacter(newMainCharacterId: $input) {
+                authenticationChangeMainCharacter(newMainCharacterId: $input) {
                     errors
                     ok
                     me {
@@ -449,7 +449,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'changeMainCharacter': {
+                    'authenticationChangeMainCharacter': {
                         'errors': [],
                         'ok': True,
                         'me': {
@@ -471,7 +471,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                changeMainCharacter(newMainCharacterId: $input) {
+                authenticationChangeMainCharacter(newMainCharacterId: $input) {
                     errors
                     ok
                     me {
@@ -493,7 +493,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'changeMainCharacter': {
+                    'authenticationChangeMainCharacter': {
                         'errors': ["You never added this character"],
                         'ok': False,
                         'me': {
@@ -515,7 +515,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                changeMainCharacter(newMainCharacterId: $input) {
+                authenticationChangeMainCharacter(newMainCharacterId: $input) {
                     errors
                     ok
                     me {
@@ -537,7 +537,7 @@ class TestChangeMainCharacterMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'changeMainCharacter': {
+                    'authenticationChangeMainCharacter': {
                         'errors': ["You don't own this character"],
                         'ok': False,
                         'me': {
@@ -569,7 +569,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: String!) {
-                addCharacter(newCharSsoToken: $input) {
+                authenticationAddCharacter(newCharSsoToken: $input) {
                     errors
                     ok
                     me {
@@ -591,7 +591,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'addCharacter': {
+                    'authenticationAddCharacter': {
                         'errors': [],
                         'ok': True,
                         'me': {
@@ -622,7 +622,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: String!) {
-                addCharacter(newCharSsoToken: $input) {
+                authenticationAddCharacter(newCharSsoToken: $input) {
                     errors
                     ok
                     me {
@@ -644,7 +644,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'addCharacter': {
+                    'authenticationAddCharacter': {
                         'errors': ['This character already has an account'],
                         'ok': False,
                         'me': {
@@ -677,7 +677,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                refreshEsiToken(tokenId: $input) {
+                esiRefreshToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -691,7 +691,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'refreshEsiToken': {
+                    'esiRefreshToken': {
                         'errors': [],
                         'ok': True,
                     }
@@ -707,7 +707,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                refreshEsiToken(tokenId: $input) {
+                esiRefreshToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -721,7 +721,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'refreshEsiToken': {
+                    'esiRefreshToken': {
                         'errors': ["Token does not exist"],
                         'ok': False,
                     }
@@ -741,7 +741,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                refreshEsiToken(tokenId: $input) {
+                esiRefreshToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -755,7 +755,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'refreshEsiToken': {
+                    'esiRefreshToken': {
                         'errors': ["This token does not belong to you."],
                         'ok': False,
                     }
@@ -777,7 +777,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                refreshEsiToken(tokenId: $input) {
+                esiRefreshToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -791,7 +791,7 @@ class TestRefreshEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'refreshEsiToken': {
+                    'esiRefreshToken': {
                         'errors': ["Failed to refresh token. Test"],
                         'ok': False,
                     }
@@ -815,7 +815,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                esiRemoveToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -829,7 +829,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'esiRemoveToken': {
                         'errors': [],
                         'ok': True,
                     }
@@ -847,7 +847,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                esiRemoveToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -861,7 +861,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'esiRemoveToken': {
                         'errors': ["This token does not belong to you."],
                         'ok': False,
                     }
@@ -877,7 +877,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
         response = self.query(
             '''
             mutation testM($input: Int!) {
-                removeEsiToken(tokenId: $input) {
+                esiRemoveToken(tokenId: $input) {
                     errors
                     ok
                 }
@@ -891,7 +891,7 @@ class TestRemoveEsiTokenMutation(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'removeEsiToken': {
+                    'esiRemoveToken': {
                         'errors': ["Token does not exist"],
                         'ok': False,
                     }
@@ -956,16 +956,16 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                loginUrl(scopes: ["test1", "test2"])
+                esiLoginUrl(scopes: ["test1", "test2"])
             }
             '''
         )
 
         data = json.loads(response.content)
         self.assertIn('data', data)
-        self.assertIn('loginUrl', data['data'])
+        self.assertIn('esiLoginUrl', data['data'])
 
-        login_url = data['data']['loginUrl']
+        login_url = data['data']['esiLoginUrl']
 
         self.assertRegex(login_url, rf"{re.escape(app_settings.ESI_OAUTH_LOGIN_URL)}\?response_type=code\&client_id=[0-9a-z]+\&redirect_uri={re.escape(quote_plus(app_settings.ESI_SSO_CALLBACK_URL))}\&scope={re.escape(quote_plus('test1 test2'))}\&state=[0-9a-zA-Z]+")
 
@@ -1003,7 +1003,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                userGroups {
+                authenticationUserGroups {
                     id
                 }
             }
@@ -1014,7 +1014,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'userGroups': [
+                    'authenticationUserGroups': [
                         {
                             'id': str(group1.pk)
                         }
@@ -1039,7 +1039,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                userGroups {
+                authenticationUserGroups {
                     id
                 }
             }
@@ -1050,7 +1050,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'userGroups': [
+                    'authenticationUserGroups': [
                         {
                             'id': str(group1.pk)
                         }
@@ -1065,7 +1065,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                userCharacters {
+                authenticationUserCharacters {
                     id
                 }
             }
@@ -1076,7 +1076,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'userCharacters': [
+                    'authenticationUserCharacters': [
                         {
                             'id': str(self.user.profile.main_character.pk)
                         }
