@@ -64,7 +64,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                getCorpstats {
+                corputilsGetAllCorpstats {
                     corp {
                         id
                     }
@@ -77,7 +77,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'getCorpstats': [
+                    'corputilsGetAllCorpstats': [
                         {
                             'corp': {
                                 'id': str(self.corp.pk)
@@ -94,7 +94,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q($input: Int!) {
-                getCorpstatsCorp(corpId: $input) {
+                corputilsGetCorpstatsCorp(corpId: $input) {
                     corp {
                         id
                     }
@@ -108,7 +108,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'getCorpstatsCorp': {
+                    'corputilsGetCorpstatsCorp': {
                         'corp': {
                             'id': str(self.corp.pk)
                         }
@@ -123,7 +123,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q($input: Int!) {
-                getCorpstatsCorp(corpId: $input) {
+                corputilsGetCorpstatsCorp(corpId: $input) {
                     corp {
                         id
                     }
@@ -137,7 +137,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'getCorpstatsCorp': None
+                    'corputilsGetCorpstatsCorp': None
                 }
             }
         )
@@ -148,7 +148,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q($input: String!) {
-                searchCorpstats(searchString: $input) {
+                corputilsSearchCorpstats(searchString: $input) {
                     characterId
                 }
             }
@@ -160,7 +160,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'searchCorpstats': [
+                    'corputilsSearchCorpstats': [
                         {
                             'characterId': self.mainchar.character_id
                         }
@@ -175,7 +175,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q($input: String!) {
-                searchCorpstats(searchString: $input) {
+                corputilsSearchCorpstats(searchString: $input) {
                     characterId
                     character {
                         id
@@ -190,7 +190,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'searchCorpstats': [
+                    'corputilsSearchCorpstats': [
                         {
                             'characterId': self.mainchar.character_id,
                             'character': {
@@ -216,7 +216,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q($input: String!) {
-                searchCorpstats(searchString: $input) {
+                corputilsSearchCorpstats(searchString: $input) {
                     characterId
                     character {
                         id
@@ -231,7 +231,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'searchCorpstats': [
+                    'corputilsSearchCorpstats': [
                         {
                             'characterId': max_char_id + 1,
                             'character': None
@@ -247,7 +247,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                getCorpstats {
+                corputilsGetAllCorpstats {
                     registered {
                         id
                     }
@@ -260,7 +260,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'getCorpstats': [
+                    'corputilsGetAllCorpstats': [
                         {
                             'registered': [
                                 {
@@ -279,7 +279,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                getCorpstats {
+                corputilsGetAllCorpstats {
                     unregistered {
                         id
                     }
@@ -294,9 +294,9 @@ class TestQueriesAndTypes(GraphQLTestCase):
 
         self.assertIn('data', data)
         self.assertNotIn('errors', data)
-        self.assertIn('getCorpstats', data['data'])
+        self.assertIn('corputilsGetAllCorpstats', data['data'])
 
-        results = data['data']['getCorpstats']
+        results = data['data']['corputilsGetAllCorpstats']
 
         self.assertEqual(len(results), 1)
 
@@ -313,7 +313,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                getCorpstats {
+                corputilsGetAllCorpstats {
                     mains {
                         id
                     }
@@ -326,7 +326,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'getCorpstats': [
+                    'corputilsGetAllCorpstats': [
                         {
                             'mains': [
                                 {
@@ -364,7 +364,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: ID!) {
-                addCorpstats(tokenId: $input) {
+                corputilsAddCorpstats(tokenId: $input) {
                     ok
                 }
             }
@@ -376,7 +376,7 @@ class TestMutations(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'addCorpstats': {
+                    'corputilsAddCorpstats': {
                         'ok': True
                     }
                 }
@@ -393,7 +393,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: ID!) {
-                addCorpstats(tokenId: $input) {
+                corputilsAddCorpstats(tokenId: $input) {
                     ok
                 }
             }
@@ -405,8 +405,8 @@ class TestMutations(GraphQLTestCase):
 
         self.assertIn('data', data)
         self.assertIn('errors', data)
-        self.assertIn('addCorpstats', data['data'])
-        self.assertIsNone(data['data']['addCorpstats'])
+        self.assertIn('corputilsAddCorpstats', data['data'])
+        self.assertIsNone(data['data']['corputilsAddCorpstats'])
 
         self.assertEqual(len(data['errors']), 1)
 
@@ -416,7 +416,7 @@ class TestMutations(GraphQLTestCase):
         self.assertIn('path', error)
         self.assertIn('message', error)
 
-        self.assertEqual(error['path'], ['addCorpstats'])
+        self.assertEqual(error['path'], ['corputilsAddCorpstats'])
 
         self.assertEqual(error['message'], 'Token not valid')
 
@@ -434,7 +434,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: ID!) {
-                addCorpstats(tokenId: $input) {
+                corputilsAddCorpstats(tokenId: $input) {
                     ok
                 }
             }
@@ -446,8 +446,8 @@ class TestMutations(GraphQLTestCase):
 
         self.assertIn('data', data)
         self.assertIn('errors', data)
-        self.assertIn('addCorpstats', data['data'])
-        self.assertIsNone(data['data']['addCorpstats'])
+        self.assertIn('corputilsAddCorpstats', data['data'])
+        self.assertIsNone(data['data']['corputilsAddCorpstats'])
 
         self.assertEqual(len(data['errors']), 1)
 
@@ -457,7 +457,7 @@ class TestMutations(GraphQLTestCase):
         self.assertIn('path', error)
         self.assertIn('message', error)
 
-        self.assertEqual(error['path'], ['addCorpstats'])
+        self.assertEqual(error['path'], ['corputilsAddCorpstats'])
 
         self.assertEqual(error['message'], 'Required token missing')
 
@@ -486,7 +486,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: ID!) {
-                addCorpstats(tokenId: $input) {
+                corputilsAddCorpstats(tokenId: $input) {
                     ok
                 }
             }
@@ -498,7 +498,7 @@ class TestMutations(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'addCorpstats': {
+                    'corputilsAddCorpstats': {
                         'ok': True
                     }
                 }
@@ -537,7 +537,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: ID!) {
-                addCorpstats(tokenId: $input) {
+                corputilsAddCorpstats(tokenId: $input) {
                     ok
                 }
             }
@@ -549,7 +549,7 @@ class TestMutations(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'addCorpstats': {
+                    'corputilsAddCorpstats': {
                         'ok': True
                     }
                 }
@@ -574,7 +574,7 @@ class TestMutations(GraphQLTestCase):
         response = self.query(
             '''
             mutation m($input: Int!) {
-                updateCorpstats(corpId: $input) {
+                corputilsUpdateCorpstats(corpId: $input) {
                     ok
                 }
             }
@@ -586,7 +586,7 @@ class TestMutations(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'updateCorpstats': {
+                    'corputilsUpdateCorpstats': {
                         'ok': True
                     }
                 }

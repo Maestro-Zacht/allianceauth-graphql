@@ -8,18 +8,18 @@ from .types import CorpStatsType, CorpMemberType
 
 
 class Query:
-    get_corpstats = graphene.List(CorpStatsType)
-    get_corpstats_corp = graphene.Field(CorpStatsType, corp_id=graphene.Int(required=True))
-    search_corpstats = graphene.List(CorpMemberType, search_string=graphene.String(required=True))
+    corputils_get_all_corpstats = graphene.List(CorpStatsType)
+    corputils_get_corpstats_corp = graphene.Field(CorpStatsType, corp_id=graphene.Int(required=True))
+    corputils_search_corpstats = graphene.List(CorpMemberType, search_string=graphene.String(required=True))
 
     @login_required
     @user_passes_test(access_corpstats_test)
-    def resolve_get_corpstats(self, info):
+    def resolve_corputils_get_all_corpstats(self, info):
         return CorpStats.objects.visible_to(info.context.user).order_by('corp__corporation_name')
 
     @login_required
     @user_passes_test(access_corpstats_test)
-    def resolve_get_corpstats_corp(self, info, corp_id):
+    def resolve_corputils_get_corpstats_corp(self, info, corp_id):
         avaiable = CorpStats.objects.visible_to(info.context.user)
         stats = CorpStats.objects.get(corp__corporation_id=corp_id)
         if avaiable.filter(pk=stats.pk).exists():
@@ -27,18 +27,13 @@ class Query:
 
     @login_required
     @user_passes_test(access_corpstats_test)
-    def resolve_search_corpstats(self, info, search_string):
-        # original code, inefficient
-        # results = []
-        # has_similar = CorpStats.objects.filter(members__character_name__icontains=search_string).visible_to(info.context.user).distinct()
-        # for corpstats in has_similar:
-        #     similar = corpstats.members.filter(character_name__icontains=search_string)
-        #     for s in similar:
-        #         results.append((corpstats, s))
-        # results = sorted(results, key=lambda x: x[1].character_name)
-
-        # my code
+    def resolve_corputils_search_corpstats(self, info, search_string):
         avaiable = CorpStats.objects.visible_to(info.context.user)
-        return CorpMember.objects\
-            .filter(corpstats__in=avaiable, character_name__icontains=search_string)\
+        return (
+            CorpMember.objects
+            .filter(
+                corpstats__in=avaiable,
+                character_name__icontains=search_string
+            )
             .order_by('character_name')
+        )
