@@ -33,26 +33,26 @@ class Query:
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
-    def resolve_rotation(self, info, id):
+    def resolve_pve_get_rotation(self, info, id):
         return Rotation.objects.get(pk=id)
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
-    def resolve_closed_rotations(self, info):
+    def resolve_pve_closed_rotations(self, info):
         return Rotation.objects.filter(is_closed=True).order_by('-closed_at')
 
     @login_required
-    def resolve_char_running_averages(self, info, start_date, end_date=timezone.now()):
+    def resolve_pve_char_running_averages(self, info, start_date, end_date=timezone.now()):
         return running_averages(info.context.user, start_date, end_date)
 
     @login_required
     @permission_required('allianceauth_pve.access_pve')
-    def resolve_active_rotations(self, info):
+    def resolve_pve_active_rotations(self, info):
         return Rotation.objects.filter(is_closed=False).order_by('-priority')
 
     @login_required
     @permission_required('allianceauth_pve.manage_entries')
-    def resolve_search_rotation_characters(self, info, name=None, exclude_characters_ids=[]):
+    def resolve_pve_search_rotation_characters(self, info, name=None, exclude_characters_ids=[]):
         content_type = ContentType.objects.get_for_model(General)
         permission = Permission.objects.get(content_type=content_type, codename='access_pve')
 
@@ -82,7 +82,7 @@ class Query:
 
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
-    def resolve_roles_setups(self, info):
+    def resolve_pve_roles_setups(self, info):
         return RoleSetup.objects.all()
 
     @login_required
