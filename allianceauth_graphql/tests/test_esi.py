@@ -15,7 +15,7 @@ class TestAll(GraphQLTestCase):
         response = self.query(
             '''
             query q {
-                userTokens {
+                esiUserTokens {
                     id
                     character {
                         id
@@ -33,7 +33,7 @@ class TestAll(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'userTokens': [
+                    'esiUserTokens': [
                         {
                             'id': str(token.pk),
                             'character': {

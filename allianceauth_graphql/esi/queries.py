@@ -5,7 +5,7 @@ from .types import TokenType
 
 
 class Query:
-    user_tokens = graphene.List(TokenType)
+    esi_user_tokens = graphene.List(TokenType)
 
     @login_required
     def resolve_user_tokens(self, info):
