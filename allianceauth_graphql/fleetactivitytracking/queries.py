@@ -4,7 +4,6 @@ import graphene
 from graphql_jwt.decorators import login_required, permission_required
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.db.models import Count
 
@@ -18,20 +17,20 @@ User = get_user_model()
 
 
 class Query:
-    recent_fat = graphene.List(FatType, num=graphene.Int())
-    fatlinks = graphene.List(FatlinkType, num=graphene.Int())
+    fat_recent_fat = graphene.List(FatType, num=graphene.Int())
+    fat_get_fatlinks = graphene.List(FatlinkType, num=graphene.Int())
     fat_corp_monthly_stats = graphene.List(FatUserStatsType, corp_id=graphene.Int(required=True), year=graphene.Int(required=True), month=graphene.Int(required=True))
     fat_general_monthly_stats = graphene.List(FatCorpStatsType, year=graphene.Int(required=True), month=graphene.Int(required=True))
     fat_personal_stats = graphene.List(FatPersonalStatsType)
     fat_personal_monthly_stats = graphene.Field(FatPersonalMonthlyStatsType, year=graphene.Int(required=True), month=graphene.Int(required=True), char_id=graphene.Int())
 
     @login_required
-    def resolve_recent_fat(self, info, num=5):
+    def resolve_fat_recent_fat(self, info, num=5):
         return Fat.objects.filter(user=info.context.user).order_by('-id')[:num]
 
     @login_required
     @permission_required('auth.fleetactivitytracking')
-    def resolve_fatlinks(self, info, num=5):
+    def resolve_fat_get_fatlinks(self, info, num=5):
         return Fatlink.objects.order_by('-id')[:num]
 
     @login_required

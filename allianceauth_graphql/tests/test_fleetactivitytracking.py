@@ -65,7 +65,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                recentFat {
+                fatRecentFat {
                     id
                 }
             }
@@ -78,7 +78,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'recentFat': [
+                    'fatRecentFat': [
                         {
                             'id': str(fat.id),
                         }
@@ -93,7 +93,7 @@ class TestQueries(GraphQLTestCase):
         response = self.query(
             '''
             query {
-                fatlinks {
+                fatGetFatlinks {
                     id
                 }
             }
@@ -104,7 +104,7 @@ class TestQueries(GraphQLTestCase):
             response.content,
             {
                 'data': {
-                    'fatlinks': [
+                    'fatGetFatlinks': [
                         {
                             'id': str(self.fatlink.id),
                         }
