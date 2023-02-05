@@ -23,12 +23,12 @@ User = get_user_model()
 
 
 class Query:
-    rotation = graphene.Field(RotationType, id=graphene.Int(required=True))
-    closed_rotations = graphene.List(RotationType)
-    char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
-    active_rotations = graphene.List(RotationType)
-    search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(), exclude_characters_ids=graphene.List(graphene.Int))
-    roles_setups = graphene.List(RoleSetupType)
+    pve_get_rotation = graphene.Field(RotationType, id=graphene.Int(required=True))
+    pve_closed_rotations = graphene.List(RotationType)
+    pve_char_running_averages = graphene.Field(RattingSummaryType, start_date=graphene.Date(required=True), end_date=graphene.Date())
+    pve_active_rotations = graphene.List(RotationType)
+    pve_search_rotation_characters = graphene.List(EveCharacterType, name=graphene.String(), exclude_characters_ids=graphene.List(graphene.Int))
+    pve_roles_setups = graphene.List(RoleSetupType)
     pve_buttons = graphene.List(PveButtonType)
 
     @login_required

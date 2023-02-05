@@ -215,8 +215,8 @@ class CloseRotation(graphene.Mutation):
 
 
 class Mutation:
-    allianceauth_pve_create_entry = CreateRattingEntry.Field()
-    allianceauth_pve_modify_entry = ModifyRattingEntry.Field()
-    allianceauth_pve_delete_entry = DeleteRattingEntry.Field()
-    allianceauth_pve_create_rotation = CreateRotation.Field()
-    allianceauth_pve_close_rotation = CloseRotation.Field()
+    pve_create_entry = CreateRattingEntry.Field()
+    pve_modify_entry = ModifyRattingEntry.Field()
+    pve_delete_entry = DeleteRattingEntry.Field()
+    pve_create_rotation = CreateRotation.Field()
+    pve_close_rotation = CloseRotation.Field()
