@@ -4,4 +4,4 @@ from allianceauth.optimer.form import OpForm
 
 
 class EditOpForm(OpForm):
-    id = forms.IntegerField(required=True)
+    op_id = forms.IntegerField(required=True)

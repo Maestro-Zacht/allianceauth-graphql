@@ -6,11 +6,14 @@ from allianceauth.optimer.form import OpForm
 from allianceauth.optimer.models import OpTimer, OpTimerType
 
 from .forms import EditOpForm
+from .types import OpTimerModelType
 
 
 class OpFormMutation(DjangoFormMutation):
     class Meta:
         form_class = OpForm
+
+    op = graphene.Field(OpTimerModelType)
 
     @classmethod
     @login_required
@@ -40,7 +43,7 @@ class OpFormMutation(DjangoFormMutation):
         op.description = form.cleaned_data['description']
         op.save()
 
-        return cls(**form.cleaned_data)
+        return cls(op=op, **form.cleaned_data)
 
 
 class RemoveOpTimerMutation(graphene.Mutation):
@@ -62,11 +65,13 @@ class OpFormEditMutation(DjangoFormMutation):
     class Meta:
         form_class = EditOpForm
 
+    op = graphene.Field(OpTimerModelType)
+
     @classmethod
     @login_required
     @permission_required('auth.optimer_management')
-    def perform_mutate(cls, form: OpForm, info):
-        op: OpTimer = OpTimer.objects.get(pk=form.cleaned_data['id'])
+    def perform_mutate(cls, form: EditOpForm, info):
+        op: OpTimer = OpTimer.objects.get(pk=form.cleaned_data['op_id'])
 
         character = info.context.user.profile.main_character
 
@@ -93,7 +98,7 @@ class OpFormEditMutation(DjangoFormMutation):
         op.description = form.cleaned_data['description']
         op.save()
 
-        return cls(**form.cleaned_data)
+        return cls(op=op, **form.cleaned_data)
 
 
 class Mutation:
