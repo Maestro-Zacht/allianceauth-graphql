@@ -1,4 +1,5 @@
 import graphene
+from graphql_jwt.decorators import login_required, permission_required
 
 from django.db.models import Q
 from django.utils import timezone
@@ -12,6 +13,8 @@ class Query:
     tmr_future_timers = graphene.List(StructureTimerType, required=True)
     tmr_past_timers = graphene.List(StructureTimerType, required=True)
 
+    @login_required
+    @permission_required('auth.timer_view')
     def resolve_tmr_future_timers(self, info):
         return Timer.objects.filter(
             (
@@ -22,6 +25,8 @@ class Query:
             eve_time__gte=timezone.now()
         )
 
+    @login_required
+    @permission_required('auth.timer_view')
     def resolve_tmr_past_timers(self, info):
         return Timer.objects.filter(
             (
