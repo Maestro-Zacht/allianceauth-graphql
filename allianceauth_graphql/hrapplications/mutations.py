@@ -34,6 +34,8 @@ class CreateApplicationMutation(graphene.Mutation):
                 response.answer = "\n".join(responses.get(question.pk, []))
                 response.save()
 
+            ok = True
+
         return cls(ok=ok, application=application)
 
 
@@ -95,7 +97,7 @@ class AdminRemoveApplicationMutation(graphene.Mutation):
     def mutate(cls, root, info, application_id):
         app = Application.objects.get(pk=application_id)
         app.delete()
-        notify(app.user, "Application Deleted", message="Your application to %s was deleted." % app.form.corp)
+        notify(app.user, "Application Deleted", message=f"Your application to {app.form.corp} was deleted.")
         return cls(ok=True)
 
 
