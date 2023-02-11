@@ -11,7 +11,7 @@ from .types import ApplicationType, ApplicationFormType, ApplicationStatus, Appl
 class Query:
     hr_corp_applications = graphene.List(ApplicationAdminType)
     hr_finished_corp_applications = graphene.List(ApplicationAdminType)
-    hr_list_avaiable_forms = graphene.List(ApplicationFormType)
+    hr_list_available_forms = graphene.List(ApplicationFormType)
     hr_personal_applications = graphene.List(ApplicationType, status=ApplicationStatus())
     hr_search_application = graphene.List(ApplicationAdminType, search_string=graphene.String(required=True))
 
@@ -43,7 +43,7 @@ class Query:
         return res
 
     @login_required
-    def resolve_hr_list_avaiable_forms(self, info):
+    def resolve_hr_list_available_forms(self, info):
         return ApplicationForm.objects.exclude(applications__user=info.context.user)
 
     @login_required
@@ -69,7 +69,8 @@ class Query:
         if not user.is_superuser:
             try:
                 app_list = app_list.filter(
-                    form__corp__corporation_id=user.profile.main_character.corporation_id)
+                    form__corp__corporation_id=user.profile.main_character.corporation_id
+                )
             except AttributeError:
                 return None
 
