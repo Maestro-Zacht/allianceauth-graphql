@@ -373,6 +373,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             query($status: ApplicationStatus) {
                 hrPersonalApplications(status: $status) {
                     id
+                    status
                 }
             }
             ''',
@@ -387,7 +388,8 @@ class TestQueriesAndTypes(GraphQLTestCase):
                 "data": {
                     "hrPersonalApplications": [
                         {
-                            "id": str(self.approved_application.id)
+                            "id": str(self.approved_application.id),
+                            "status": ApplicationStatus.APPROVED.name
                         },
                     ]
                 }
