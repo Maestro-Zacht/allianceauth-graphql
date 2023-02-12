@@ -26,7 +26,7 @@ class AddFleetMutation(DjangoFormMutation):
     @classmethod
     @login_required
     @permissions_required(('auth.srp_management', 'srp.add_srpfleetmain'))
-    def perferm_mutate(cls, form: SrpFleetMainForm, info):
+    def perform_mutate(cls, form: SrpFleetMainForm, info):
         srp_fleet_main = SrpFleetMain()
         srp_fleet_main.fleet_name = form.cleaned_data['fleet_name']
         srp_fleet_main.fleet_doctrine = form.cleaned_data['fleet_doctrine']
