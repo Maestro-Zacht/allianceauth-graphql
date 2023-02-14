@@ -193,7 +193,11 @@ class SrpRequestApproveMutation(graphene.Mutation):
     def mutate(cls, root, info, request_ids):
         for srp_request_id in request_ids:
             if SrpUserRequest.objects.filter(id=srp_request_id).exists():
-                srpuserrequest = SrpUserRequest.objects.get(id=srp_request_id)
+                srpuserrequest = (
+                    SrpUserRequest.objects
+                    .select_related('character__character_ownership__user', 'srp_fleet_main')
+                    .get(id=srp_request_id)
+                )
                 srpuserrequest.srp_status = "Approved"
                 if srpuserrequest.srp_total_amount == 0:
                     srpuserrequest.srp_total_amount = srpuserrequest.kb_total_loss
@@ -219,7 +223,11 @@ class SrpRequestRejectMutation(graphene.Mutation):
     def mutate(cls, root, info, request_ids):
         for srp_request_id in request_ids:
             if SrpUserRequest.objects.filter(id=srp_request_id).exists():
-                srpuserrequest = SrpUserRequest.objects.get(id=srp_request_id)
+                srpuserrequest = (
+                    SrpUserRequest.objects
+                    .select_related('character__character_ownership__user', 'srp_fleet_main')
+                    .get(id=srp_request_id)
+                )
                 srpuserrequest.srp_status = "Rejected"
                 srpuserrequest.save()
                 notify(
