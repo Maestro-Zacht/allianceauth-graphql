@@ -529,6 +529,47 @@ class TestSrpFleetUserRequestFormMutation(GraphQLTestCase):
 
         self.assertEqual(SrpUserRequest.objects.count(), 0)
 
+    def test_already_requested(self):
+        self.client.force_login(self.user)
+
+        SrpUserRequest.objects.create(
+            srp_fleet_main=self.fleet,
+            character=self.user.profile.main_character,
+            killboard_link=self.form_data['killboardLink'],
+            srp_ship_name='Avatar',
+        )
+
+        response = self.query(
+            '''
+            mutation($input: SrpFleetUserRequestFormMutationInput!) {
+                srpRequest(input: $input) {
+                    ok
+                    srpRequest {
+                        killboardLink
+                        srpFleetMain {
+                            id
+                        }
+                    }
+                }
+            }
+            ''',
+            input_data=self.form_data
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'srpRequest': {
+                        'ok': False,
+                        'srpRequest': None
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(SrpUserRequest.objects.count(), 1)
+
 
 class TestSrpRequestRemoveMutation(GraphQLTestCase):
     maxDiff = None
@@ -580,7 +621,7 @@ class TestSrpRequestRemoveMutation(GraphQLTestCase):
         self.assertEqual(SrpUserRequest.objects.count(), 0)
 
 
-class TestSrpRequestApproveMutation(GraphQLTestCase):
+class TestSrpRequestApproveRejectMutation(GraphQLTestCase):
     maxDiff = None
 
     @classmethod
@@ -611,7 +652,7 @@ class TestSrpRequestApproveMutation(GraphQLTestCase):
             kb_total_loss=64_840_457_150.95,
         )
 
-    def test_ok(self):
+    def test_approve_ok(self):
         self.client.force_login(self.user)
 
         response = self.query(
@@ -643,6 +684,40 @@ class TestSrpRequestApproveMutation(GraphQLTestCase):
         )
 
         self.assertEqual(SrpUserRequest.objects.filter(srp_status='Approved').count(), 2)
+        self.assertEqual(Notification.objects.count(), 2)
+
+    def test_reject_ok(self):
+        self.client.force_login(self.user)
+
+        response = self.query(
+            '''
+            mutation($requestIds: [ID!]!) {
+                srpRejectRequests(requestIds: $requestIds) {
+                    ok
+                }
+            }
+            ''',
+            variables={
+                'requestIds': [
+                    self.request.pk,
+                    self.request2.pk,
+                    generate_invalid_pk(SrpUserRequest)
+                ]
+            }
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'srpRejectRequests': {
+                        'ok': True,
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(SrpUserRequest.objects.filter(srp_status='Rejected').count(), 2)
         self.assertEqual(Notification.objects.count(), 2)
 
 

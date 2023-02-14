@@ -226,8 +226,7 @@ class SrpRequestRejectMutation(graphene.Mutation):
                     srpuserrequest.character.character_ownership.user,
                     'SRP Request Rejected',
                     level='danger',
-                    message='Your SRP request for a {} lost during {} has been rejected.'.format(
-                        srpuserrequest.srp_ship_name, srpuserrequest.srp_fleet_main.fleet_name)
+                    message=f'Your SRP request for a {srpuserrequest.srp_ship_name} lost during {srpuserrequest.srp_fleet_main.fleet_name} has been rejected.'
                 )
         return cls(ok=True)
 
