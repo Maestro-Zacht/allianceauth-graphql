@@ -13,7 +13,7 @@ from allianceauth.srp.providers import esi
 from allianceauth.notifications import notify
 
 from ..decorators import permissions_required
-from .types import SrpFleetMainType
+from .types import SrpFleetMainType, SrpUserRequestType
 from .forms import GQLSrpFleetUserRequestForm
 
 
@@ -22,6 +22,7 @@ class AddFleetMutation(DjangoFormMutation):
         form_class = SrpFleetMainForm
 
     ok = graphene.Boolean()
+    srp_fleet = graphene.Field(SrpFleetMainType)
 
     @classmethod
     @login_required
@@ -36,11 +37,11 @@ class AddFleetMutation(DjangoFormMutation):
 
         srp_fleet_main.save()
 
-        return cls(ok=True)
+        return cls(ok=True, srp_fleet=srp_fleet_main)
 
 
 class RemoveFleetMutation(graphene.Mutation):
-    class Meta:
+    class Arguments:
         fleet_id = graphene.ID(required=True)
 
     ok = graphene.Boolean()
@@ -54,7 +55,7 @@ class RemoveFleetMutation(graphene.Mutation):
 
 
 class DisableFleetMutation(graphene.Mutation):
-    class Meta:
+    class Arguments:
         fleet_id = graphene.ID(required=True)
 
     ok = graphene.Boolean()
@@ -71,7 +72,7 @@ class DisableFleetMutation(graphene.Mutation):
 
 
 class EnableFleetMutation(graphene.Mutation):
-    class Meta:
+    class Arguments:
         fleet_id = graphene.ID(required=True)
 
     ok = graphene.Boolean()
@@ -88,7 +89,7 @@ class EnableFleetMutation(graphene.Mutation):
 
 
 class CompletedFleetMutation(graphene.Mutation):
-    class Meta:
+    class Arguments:
         fleet_id = graphene.ID(required=True)
 
     ok = graphene.Boolean()
@@ -105,7 +106,7 @@ class CompletedFleetMutation(graphene.Mutation):
 
 
 class UncompletedFleetMutation(graphene.Mutation):
-    class Meta:
+    class Arguments:
         fleet_id = graphene.ID(required=True)
 
     ok = graphene.Boolean()
@@ -126,6 +127,7 @@ class SrpFleetUserRequestFormMutation(DjangoFormMutation):
         form_class = GQLSrpFleetUserRequestForm
 
     ok = graphene.Boolean()
+    srp_request = graphene.Field(SrpUserRequestType)
 
     @classmethod
     @login_required
@@ -160,7 +162,7 @@ class SrpFleetUserRequestFormMutation(DjangoFormMutation):
             srp_request.kb_total_loss = ship_value
             srp_request.post_time = post_time
             srp_request.save()
-            return cls(ok=True)
+            return cls(ok=True, srp_request=srp_request)
         else:
             return cls(ok=False)
 
@@ -200,9 +202,7 @@ class SrpRequestApproveMutation(graphene.Mutation):
                     srpuserrequest.character.character_ownership.user,
                     'SRP Request Approved',
                     level='success',
-                    message='Your SRP request for a {} lost during {} has been approved for {} ISK.'.format(
-                        srpuserrequest.srp_ship_name, srpuserrequest.srp_fleet_main.fleet_name,
-                        intcomma(srpuserrequest.srp_total_amount))
+                    message=f'Your SRP request for a {srpuserrequest.srp_ship_name} lost during {srpuserrequest.srp_fleet_main.fleet_name} has been approved for {intcomma(srpuserrequest.srp_total_amount)} ISK.'
                 )
         return cls(ok=True)
 
