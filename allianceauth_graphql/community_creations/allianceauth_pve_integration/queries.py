@@ -42,7 +42,7 @@ class Query:
         return Rotation.objects.filter(is_closed=True).order_by('-closed_at')
 
     @login_required
-    def resolve_pve_char_running_averages(self, info, start_date, end_date=timezone.now()):
+    def resolve_pve_char_running_averages(self, info, start_date, end_date=None):
         return running_averages(info.context.user, start_date, end_date)
 
     @login_required
@@ -54,7 +54,10 @@ class Query:
     @permission_required('allianceauth_pve.manage_entries')
     def resolve_pve_search_rotation_characters(self, info, name=None, exclude_characters_ids=[]):
         content_type = ContentType.objects.get_for_model(General)
-        permission = Permission.objects.get(content_type=content_type, codename='access_pve')
+        permission = Permission.objects.get(
+            content_type=content_type,
+            codename='access_pve'
+        )
 
         ownerships = CharacterOwnership.objects.filter(
             Q(user__groups__permissions=permission) |
@@ -64,7 +67,11 @@ class Query:
         )
 
         if name:
-            alts_name = CharacterOwnership.objects.filter(user=OuterRef('user'), character__character_name__icontains=name)
+            alts_name = CharacterOwnership.objects.filter(
+                user=OuterRef('user'),
+                character__character_name__icontains=name
+            )
+
             ownerships = ownerships.filter(
                 Q(character__character_name__icontains=name) |
                 (Exists(alts_name) & Q(character=F('user__profile__main_character')))

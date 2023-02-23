@@ -70,14 +70,16 @@ class CreateRattingEntry(graphene.Mutation):
                     if setup:
                         setups.add(new_share['user_id'])
 
-                    to_add.append(EntryCharacter(
-                        entry=entry,
-                        role=role,
-                        user_character_id=new_share['character_id'],
-                        user_id=new_share['user_id'],
-                        site_count=new_share['site_count'],
-                        helped_setup=setup,
-                    ))
+                    to_add.append(
+                        EntryCharacter(
+                            entry=entry,
+                            role=role,
+                            user_character_id=new_share['character_id'],
+                            user_id=new_share['user_id'],
+                            site_count=new_share['site_count'],
+                            helped_setup=setup,
+                        )
+                    )
 
                 EntryCharacter.objects.bulk_create(to_add)
 
@@ -198,7 +200,7 @@ class CloseRotation(graphene.Mutation):
     @login_required
     @permission_required('allianceauth_pve.manage_rotations')
     def mutate(cls, root, info, input):
-        rotation = Rotation.objects.get(pk=input.rotation_id)
+        rotation: Rotation = Rotation.objects.get(pk=input.rotation_id)
 
         if rotation.is_closed:
             ok = False
