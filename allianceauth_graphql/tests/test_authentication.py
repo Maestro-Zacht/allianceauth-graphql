@@ -609,9 +609,8 @@ class TestAddCharacterMutation(GraphQLTestCase):
             }
         )
 
-    # TODO: enable with new version of app utils
     @patch('esi.managers.TokenManager.create_from_code')
-    def disabled_test_not_owned(self, mock_create_from_code):
+    def test_not_owned(self, mock_create_from_code):
         user2 = UserFactory()
         add_character_to_user(user2, self.newchar, is_main=True)
 
