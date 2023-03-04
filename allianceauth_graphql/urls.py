@@ -10,5 +10,5 @@ app_name = 'allianceauth_graphql'
 
 urlpatterns = [
     path("", csrf_exempt(GraphQLView.as_view(graphiql=getattr(settings, 'SHOW_GRAPHIQL', True), schema=schema)), name='graphql'),
-    path('/verify/', verify_email, name='verify_email')
+    path('verify/', verify_email, name='verify_email')
 ]

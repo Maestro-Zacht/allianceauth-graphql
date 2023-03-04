@@ -89,7 +89,7 @@ Install plugin
 
     urlpatterns = [
         re_path(r'', include(urls)),
-        re_path(r'graphql', include(aa_gql_urls)),
+        re_path(r'graphql/', include(aa_gql_urls)),
     ]
 
     handler500 = 'allianceauth.views.Generic500Redirect'
