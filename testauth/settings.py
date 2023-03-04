@@ -324,6 +324,7 @@ GRAPHENE = {
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
+    "TESTING_ENDPOINT": "/graphql/",
 }
 
 AUTHENTICATION_BACKENDS += [
