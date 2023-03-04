@@ -1,7 +1,6 @@
 import datetime
 
 import graphene
-# from graphene_django.forms.mutation import DjangoFormMutation
 from graphql_jwt.decorators import login_required, permission_required
 
 from django.utils import timezone

@@ -11,3 +11,4 @@ class OpTimerModelType(DjangoObjectType):
 class OpTimerTypeType(DjangoObjectType):
     class Meta:
         model = OpTimerType
+        fields = ('id', "type", )

@@ -23,28 +23,18 @@ def tokens_required(scopes, exc=PermissionDenied):
     return decorator
 
 
-def permissions_required(perm, raise_exception=False):
+def permissions_required(perm):
     """
-    Decorator for views that checks whether a user has a particular permission
+    Decorator for views that checks whether a user has any particular permission
     enabled.
-    If the raise_exception parameter is given the PermissionDenied exception
-    is raised.
 
-    This decorator is the graphql version of the allianceauth permission_required.
+    This decorator is the graphql modified version of the allianceauth permission_required.
     """
     def check_perms(user):
-        if isinstance(perm, str):
-            perms = (perm,)
-        else:
-            perms = perm
-
-        for perm_ in perms:
+        for perm_ in perm:
             perm_ = (perm_,)
             if user.has_perms(perm_):
                 return True
-
-        if raise_exception:
-            raise PermissionDenied
 
         return False
     return user_passes_test(check_perms)

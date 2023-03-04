@@ -7,11 +7,13 @@ from allianceauth.eveonline.models import EveCharacter, EveFactionInfo, EveAllia
 class EveFactionInfoType(DjangoObjectType):
     class Meta:
         model = EveFactionInfo
+        fields = ('id', 'faction_id', 'faction_name', )
 
 
 class EveAllianceInfoType(DjangoObjectType):
     class Meta:
         model = EveAllianceInfo
+        fields = ('id', 'alliance_id', 'alliance_name', 'alliance_ticker', 'executor_corp_id', 'evecorporationinfo_set', )
 
 
 class EveCorporationInfoType(DjangoObjectType):
@@ -22,6 +24,7 @@ class EveCorporationInfoType(DjangoObjectType):
 
     class Meta:
         model = EveCorporationInfo
+        fields = ('id', 'corporation_id', 'corporation_name', 'corporation_ticker', 'alliance', 'ceo_id', 'member_count', )
 
 
 class EveCharacterType(DjangoObjectType):
@@ -34,6 +37,7 @@ class EveCharacterType(DjangoObjectType):
 
     class Meta:
         model = EveCharacter
+        fields = ('id', 'character_name', 'character_id', 'corporation_id', 'corporation_name', 'alliance_id', 'alliance_name', 'faction_id', 'faction_name', )
 
     def resolve_zkillboard(self, info):
         return f"https://zkillboard.com/character/{self.character_id}/"

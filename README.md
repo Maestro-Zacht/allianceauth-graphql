@@ -106,7 +106,7 @@ Community Creations Integration
 -------------------------------
 
 Currently the package supports the integration with the following community packages:
-* allianceauth-pve v1.8.x
+* allianceauth-pve: v1.8.x v1.9.x
 
 Be sure to check if you have the right versions of these package or the GraphQL will not have the same behaviour as the apps.
 

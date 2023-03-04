@@ -115,6 +115,24 @@ class TestQueries(GraphQLTestCase):
             }
         )
 
+    def test_notif_unread_count_error(self):
+        response = self.query(
+            '''
+            query q {
+                notifUnreadCount
+            }
+            '''
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'notifUnreadCount': -1
+                }
+            }
+        )
+
 
 class TestMutations(GraphQLTestCase):
     maxDiff = None
