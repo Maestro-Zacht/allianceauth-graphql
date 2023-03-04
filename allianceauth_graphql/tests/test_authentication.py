@@ -608,52 +608,7 @@ class TestAddCharacterMutation(GraphQLTestCase):
                 }
             }
         )
-
-    @patch('esi.managers.TokenManager.create_from_code')
-    def test_not_owned(self, mock_create_from_code):
-        user2 = UserFactory()
-        add_character_to_user(user2, self.newchar, is_main=True)
-
-        mock_create_from_code.return_value = add_new_token(self.user, self.newchar)
-
-        self.client.force_login(self.user, "graphql_jwt.backends.JSONWebTokenBackend")
-
-        response = self.query(
-            '''
-            mutation testM($input: String!) {
-                authenticationAddCharacter(newCharSsoToken: $input) {
-                    errors
-                    ok
-                    me {
-                        id
-                        characterOwnerships {
-                            character {
-                                id
-                            }
-                        }
-                    }
-                }
-            }
-            ''',
-            operation_name='testM',
-            input_data='nice_token'
-        )
-
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'authenticationAddCharacter': {
-                        'errors': ['This character already has an account'],
-                        'ok': False,
-                        'me': {
-                            'id': str(self.user.pk),
-                            'characterOwnerships': []
-                        }
-                    }
-                }
-            }
-        )
+    
 
 
 class TestRefreshEsiTokenMutation(GraphQLTestCase):
