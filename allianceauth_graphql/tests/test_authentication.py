@@ -574,11 +574,6 @@ class TestAddCharacterMutation(GraphQLTestCase):
                     ok
                     me {
                         id
-                        characterOwnerships {
-                            character {
-                                id
-                            }
-                        }
                     }
                 }
             }
@@ -596,19 +591,14 @@ class TestAddCharacterMutation(GraphQLTestCase):
                         'ok': True,
                         'me': {
                             'id': str(self.user.pk),
-                            'characterOwnerships': [
-                                {
-                                    'character': {
-                                        'id': str(self.newchar.pk)
-                                    }
-                                }
-                            ]
                         }
                     }
                 }
             }
         )
-    
+
+        self.assertEqual(self.user.character_ownerships.count(), 1)
+        self.assertEqual(self.user.character_ownerships.first().character, self.newchar)
 
 
 class TestRefreshEsiTokenMutation(GraphQLTestCase):
