@@ -608,7 +608,6 @@ class TestAddCharacterMutation(GraphQLTestCase):
                 }
             }
         )
-    
 
 
 class TestRefreshEsiTokenMutation(GraphQLTestCase):

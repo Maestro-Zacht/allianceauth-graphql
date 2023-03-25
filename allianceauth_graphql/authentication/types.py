@@ -15,12 +15,13 @@ class UserProfileType(DjangoObjectType):
 
     class Meta:
         model = UserProfile
+        fields = ('id', 'user', 'main_character', 'state', )
 
 
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile', 'character_ownerships',)
+        fields = ('id', 'username', 'profile',)
 
 
 class GroupStatusEnum(graphene.Enum):
