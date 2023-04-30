@@ -221,7 +221,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
 
     @patch('esi.managers.TokenManager.create_from_code')
     def test_token_equivalent_exists(self, mock_create_from_code):
-        newtoken = add_new_token(self.user, self.user.profile.main_character, "publicData")
+        newtoken = add_new_token(self.user, self.user.profile.main_character, ["publicData"])
 
         mock_create_from_code.return_value = newtoken
 
