@@ -11,7 +11,6 @@ class TimerInput(graphene.InputObjectType):
     days_left = graphene.Int(required=False)
     hours_left = graphene.Int(required=False)
     minutes_left = graphene.Int(required=False)
-    is_absolute_time = graphene.Boolean(required=True)
     absolute_time = graphene.DateTime(required=False)
     important = graphene.Boolean(default_value=False)
     corp_timer = graphene.Boolean(default_value=False)

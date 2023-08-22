@@ -149,6 +149,102 @@ class TestMutations(GraphQLTestCase):
             'corpTimer': False,
         }
 
+    def test_absolute_time_ok(self):
+        time = timezone.now() + datetime.timedelta(days=7)
+        input_data = self.input_data.copy()
+        input_data.update({'absoluteTime': time.isoformat()})
+        input_data.pop('daysLeft')
+        input_data.pop('hoursLeft')
+        input_data.pop('minutesLeft')
+
+        self.client.force_login(self.user)
+
+        response = self.query(
+            '''
+            mutation($input: TimerInput!) {
+                tmrAddTimer(input: $input) {
+                    ok
+                    timer {
+                        details
+                        system
+                        structure
+                        timerType
+                        objective
+                        important
+                        corpTimer
+                        eveTime
+                    }
+                }
+            }
+            ''',
+            input_data=input_data
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'tmrAddTimer': {
+                        'ok': True,
+                        'timer': {
+                            'details': 'test',
+                            'system': 'Jita',
+                            'structure': TimerStructureChoices.Keepstar.name,
+                            'timerType': TimerTypeChoices.FINAL.name,
+                            'objective': TimerObjectiveChoices.Neutral.name,
+                            'important': True,
+                            'corpTimer': False,
+                            'eveTime': time.isoformat(),
+                        }
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(Timer.objects.count(), 2)
+
+    def test_absolute_time_error(self):
+        self.input_data.pop('daysLeft')
+        self.input_data.pop('hoursLeft')
+        self.input_data.pop('minutesLeft')
+
+        self.client.force_login(self.user)
+
+        response = self.query(
+            '''
+            mutation($input: TimerInput!) {
+                tmrAddTimer(input: $input) {
+                    ok
+                    timer {
+                        details
+                        system
+                        structure
+                        timerType
+                        objective
+                        important
+                        corpTimer
+                        eveTime
+                    }
+                }
+            }
+            ''',
+            input_data=self.input_data
+        )
+
+        self.assertJSONEqual(
+            response.content,
+            {
+                'data': {
+                    'tmrAddTimer': {
+                        'ok': False,
+                        'timer': None,
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(Timer.objects.count(), 1)
+
     def test_add_ok(self):
         self.client.force_login(self.user)
 

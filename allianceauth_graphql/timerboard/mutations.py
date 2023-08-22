@@ -22,12 +22,6 @@ class AddTimerMutation(graphene.Mutation):
     @login_required
     @permission_required('auth.timer_management')
     def mutate(cls, root, info, input: TimerInput):
-        if input.days_left < 0:
-            return cls(ok=False)
-        if input.hours_left < 0 or input.hours_left > 23:
-            return cls(ok=False)
-        if input.minutes_left < 0 or input.minutes_left > 59:
-            return cls(ok=False)
 
         user = info.context.user
         char = user.profile.main_character
@@ -42,6 +36,13 @@ class AddTimerMutation(graphene.Mutation):
         timer.objective = input.objective
 
         if input.days_left or input.hours_left or input.minutes_left:
+            if input.days_left and input.days_left < 0:
+                return cls(ok=False)
+            if input.hours_left and (input.hours_left < 0 or input.hours_left > 23):
+                return cls(ok=False)
+            if input.minutes_left and (input.minutes_left < 0 or input.minutes_left > 59):
+                return cls(ok=False)
+
             timer.eve_time = timezone.now() + datetime.timedelta(
                 days=input.days_left,
                 hours=input.hours_left,
@@ -50,7 +51,7 @@ class AddTimerMutation(graphene.Mutation):
         elif input.absolute_time:
             timer.eve_time = input.absolute_time
         else:
-            raise Exception("Either future time or absolute time must be provided.")
+            return cls(ok=False)
 
         timer.important = input.important
         timer.corp_timer = input.corp_timer
