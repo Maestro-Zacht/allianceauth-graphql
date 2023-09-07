@@ -45,7 +45,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/Maestro-Zacht/allianceauth-graphql"
-Source = "https://gitlab.com/allianceauth/allianceauth"
+Source = "https://github.com/Maestro-Zacht/allianceauth-graphql"
 Tracker = "https://github.com/Maestro-Zacht/allianceauth-graphql/issues"
 Changelog = "https://github.com/Maestro-Zacht/allianceauth-graphql/releases"
 
