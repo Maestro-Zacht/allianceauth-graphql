@@ -37,7 +37,7 @@ keywords = [
 ]
 requires-python = "~=3.8"
 dependencies = [
-    "allianceauth~=3.6.0",
+    "allianceauth~=3.7.0",
 	"graphene-django~=3.0.0",
 	"django-graphql-jwt~=0.3.0",
 	"allianceauth-app-utils~=1.15",
