@@ -79,10 +79,15 @@ class Query:
 
         logger.debug(f"Providing user {user} with {len(acceptrequests)} acceptrequests and {len(leaverequests)} leaverequests.")
 
+        show_leave_tab = (
+            getattr(settings, 'GROUPMANAGEMENT_AUTO_LEAVE', False)
+            and not GroupRequest.objects.filter(leave_request=True).exists()
+        )
+
         return {
             'leave_requests': leaverequests,
             'accept_requests': acceptrequests,
-            'auto_leave': getattr(settings, 'GROUPMANAGEMENT_AUTO_LEAVE', False),
+            'auto_leave': show_leave_tab,
         }
 
     @login_required
