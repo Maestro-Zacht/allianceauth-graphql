@@ -123,7 +123,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
                 'data': {
                     'esiTokenAuth': {
                         'errors': [
-                            'Unable to authenticate the selected character',
+                            'Unable to authenticate the selected character. Please log in with the main character associated with this account.',
                         ],
                         'status': LoginStatus.ERROR.name,
                         'me': None
@@ -290,7 +290,7 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             {
                 'data': {
                     'esiTokenAuth': {
-                        'errors': ['Unable to authenticate the selected character'],
+                        'errors': ['Unable to authenticate the selected character. Please log in with the main character associated with this account.'],
                         'status': LoginStatus.ERROR.name,
                         'me': None
                     }
