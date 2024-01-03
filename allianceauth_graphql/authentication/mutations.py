@@ -59,10 +59,12 @@ class EsiTokenAuthMutation(graphene.Mutation):
                     user.is_active = True
                     user.save()
             else:
-                errors.append('Unable to authenticate the selected character')
+                token_obj.delete()
+                errors.append('Unable to authenticate the selected character. Please log in with the main character associated with this account.')
 
         else:
-            errors.append('Unable to authenticate the selected character')
+            token_obj.delete()
+            errors.append('Unable to authenticate the selected character. Please log in with the main character associated with this account.')
 
         if status == LoginStatus.LOGGED_IN:
             token = get_token(user)
