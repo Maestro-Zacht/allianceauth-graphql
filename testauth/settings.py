@@ -280,7 +280,6 @@ INSTALLED_APPS += [
     'allianceauth_graphql',
     'graphene_django',
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
-    'allianceauth.analytics',
     "allianceauth.eveonline.autogroups",
     "allianceauth.hrapplications",
     "allianceauth.timerboard",
