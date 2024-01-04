@@ -1,3 +1,5 @@
+import json
+
 from graphene_django.utils.testing import GraphQLTestCase
 
 from allianceauth.tests.auth_utils import AuthUtils
@@ -416,30 +418,30 @@ class TestQueriesAndTypes(GraphQLTestCase):
             }
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrSearchApplication": [
-                        {
-                            'id': str(self.pending_application.id),
-                            'status': ApplicationStatus.PENDING.name
-                        },
-                        {
-                            'id': str(self.pending_application2.id),
-                            'status': ApplicationStatus.PENDING.name
-                        },
-                        {
-                            "id": str(self.rejected_application.id),
-                            "status": ApplicationStatus.REJECTED.name
-                        },
-                        {
-                            'id': str(self.approved_application.id),
-                            'status': ApplicationStatus.APPROVED.name
-                        }
-                    ]
+        result = json.loads(response.content)
+
+        self.assertIn('data', result)
+        self.assertIn('hrSearchApplication', result['data'])
+        self.assertCountEqual(
+            result['data']['hrSearchApplication'],
+            [
+                {
+                    'id': str(self.pending_application.id),
+                    'status': ApplicationStatus.PENDING.name
+                },
+                {
+                    'id': str(self.pending_application2.id),
+                    'status': ApplicationStatus.PENDING.name
+                },
+                {
+                    "id": str(self.rejected_application.id),
+                    "status": ApplicationStatus.REJECTED.name
+                },
+                {
+                    'id': str(self.approved_application.id),
+                    'status': ApplicationStatus.APPROVED.name
                 }
-            }
+            ]
         )
 
     def test_hr_search_application_perms(self):

@@ -117,6 +117,8 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             variables={'sso_token': 'nice_token'}
         )
 
+        self.assertEqual(self.user.token_set.count(), 0)
+
         self.assertJSONEqual(
             response.content,
             {
@@ -284,6 +286,8 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             operation_name='testM',
             variables={'sso_token': 'nice_token'}
         )
+
+        self.assertEqual(self.user.token_set.count(), 0)
 
         self.assertJSONEqual(
             response.content,
