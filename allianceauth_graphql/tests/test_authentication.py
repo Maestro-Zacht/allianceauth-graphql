@@ -117,13 +117,15 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             variables={'sso_token': 'nice_token'}
         )
 
+        self.assertEqual(self.user.token_set.count(), 0)
+
         self.assertJSONEqual(
             response.content,
             {
                 'data': {
                     'esiTokenAuth': {
                         'errors': [
-                            'Unable to authenticate the selected character',
+                            'Unable to authenticate the selected character. Please log in with the main character associated with this account.',
                         ],
                         'status': LoginStatus.ERROR.name,
                         'me': None
@@ -285,12 +287,14 @@ class TestEsiTokenAuthMutation(GraphQLTestCase):
             variables={'sso_token': 'nice_token'}
         )
 
+        self.assertEqual(self.user.token_set.count(), 0)
+
         self.assertJSONEqual(
             response.content,
             {
                 'data': {
                     'esiTokenAuth': {
-                        'errors': ['Unable to authenticate the selected character'],
+                        'errors': ['Unable to authenticate the selected character. Please log in with the main character associated with this account.'],
                         'status': LoginStatus.ERROR.name,
                         'me': None
                     }

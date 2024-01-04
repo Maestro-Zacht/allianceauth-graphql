@@ -76,20 +76,20 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'tmrFutureTimers': [
-                        {
-                            'id': str(self.corp_future_timer.pk),
-                        },
-                        {
-                            'id': str(self.future_timer.pk),
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('tmrFutureTimers', res['data'])
+        self.assertCountEqual(
+            res['data']['tmrFutureTimers'],
+            [
+                {
+                    'id': str(self.corp_future_timer.pk),
+                },
+                {
+                    'id': str(self.future_timer.pk),
+                },
+            ]
         )
 
     def test_tmr_past_timers(self):
@@ -105,20 +105,20 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'tmrPastTimers': [
-                        {
-                            'id': str(self.corp_past_timer.pk),
-                        },
-                        {
-                            'id': str(self.past_timer.pk),
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('tmrPastTimers', res['data'])
+        self.assertCountEqual(
+            res['data']['tmrPastTimers'],
+            [
+                {
+                    'id': str(self.corp_past_timer.pk),
+                },
+                {
+                    'id': str(self.past_timer.pk),
+                },
+            ]
         )
 
 

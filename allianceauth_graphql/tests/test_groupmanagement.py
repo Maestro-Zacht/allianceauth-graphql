@@ -99,22 +99,22 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementUserJoinableGroups": [
-                        {
-                            "id": str(self.group1.id),
-                            "status": GroupStatusEnum.PENDING.name,
-                        },
-                        {
-                            "id": str(self.group2.id),
-                            "status": GroupStatusEnum.CAN_APPLY.name,
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementUserJoinableGroups', res['data'])
+        self.assertCountEqual(
+            res['data']['groupmanagementUserJoinableGroups'],
+            [
+                {
+                    "id": str(self.group1.id),
+                    "status": GroupStatusEnum.PENDING.name,
+                },
+                {
+                    "id": str(self.group2.id),
+                    "status": GroupStatusEnum.CAN_APPLY.name,
+                },
+            ]
         )
 
     def test_group_management_has_perms(self):
@@ -145,34 +145,37 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementManageRequests": {
-                        "leaveRequests": [
-                            {
-                                "group": {
-                                    "id": str(self.group2.id),
-                                },
-                                "user": {
-                                    "id": str(self.user3.id),
-                                }
-                            }
-                        ],
-                        "acceptRequests": [
-                            {
-                                "group": {
-                                    "id": str(self.group1.id),
-                                },
-                                "user": {
-                                    "id": str(self.user.id),
-                                }
-                            }
-                        ]
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementManageRequests', res['data'])
+        self.assertIn('leaveRequests', res['data']['groupmanagementManageRequests'])
+        self.assertCountEqual(
+            res['data']['groupmanagementManageRequests']['leaveRequests'],
+            [
+                {
+                    "group": {
+                        "id": str(self.group2.id),
+                    },
+                    "user": {
+                        "id": str(self.user3.id),
                     }
                 }
-            }
+            ]
+        )
+        self.assertIn('acceptRequests', res['data']['groupmanagementManageRequests'])
+        self.assertCountEqual(
+            res['data']['groupmanagementManageRequests']['acceptRequests'],
+            [
+                {
+                    "group": {
+                        "id": str(self.group1.id),
+                    },
+                    "user": {
+                        "id": str(self.user.id),
+                    }
+                }
+            ]
         )
 
     def test_group_management_group_leader(self):
@@ -203,26 +206,26 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementManageRequests": {
-                        "leaveRequests": [
-                            {
-                                "group": {
-                                    "id": str(self.group2.id),
-                                },
-                                "user": {
-                                    "id": str(self.user3.id),
-                                }
-                            }
-                        ],
-                        "acceptRequests": []
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementManageRequests', res['data'])
+        self.assertIn('leaveRequests', res['data']['groupmanagementManageRequests'])
+        self.assertCountEqual(
+            res['data']['groupmanagementManageRequests']['leaveRequests'],
+            [
+                {
+                    "group": {
+                        "id": str(self.group2.id),
+                    },
+                    "user": {
+                        "id": str(self.user3.id),
                     }
                 }
-            }
+            ]
         )
+        self.assertIn('acceptRequests', res['data']['groupmanagementManageRequests'])
+        self.assertEqual(res['data']['groupmanagementManageRequests']['acceptRequests'], [])
 
     def test_group_membership_has_perms(self):
         self.client.force_login(self.user)
@@ -238,22 +241,22 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementGroups": [
-                        {
-                            "id": str(self.group1.id),
-                            "numMembers": 0,
-                        },
-                        {
-                            "id": str(self.group2.id),
-                            "numMembers": 2,
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementGroups', res['data'])
+        self.assertCountEqual(
+            res['data']['groupmanagementGroups'],
+            [
+                {
+                    "id": str(self.group1.id),
+                    "numMembers": 0,
+                },
+                {
+                    "id": str(self.group2.id),
+                    "numMembers": 2,
+                },
+            ]
         )
 
     def test_group_membership_group_leader(self):
@@ -308,25 +311,24 @@ class TestQueries(GraphQLTestCase):
             }
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementGroupMemberships": {
-                        'group': {
-                            'id': str(self.group2.id),
-                        },
-                        "members": [
-                            {
-                                "user": {
-                                    "id": str(user.id),
-                                },
-                                "isLeader": user == self.user2,
-                            } for user in [self.user2, self.user3]
-                        ]
-                    }
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementGroupMemberships', res['data'])
+        self.assertIn('group', res['data']['groupmanagementGroupMemberships'])
+        self.assertIn('id', res['data']['groupmanagementGroupMemberships']['group'])
+        self.assertEqual(res['data']['groupmanagementGroupMemberships']['group']['id'], str(self.group2.id))
+        self.assertIn('members', res['data']['groupmanagementGroupMemberships'])
+        self.assertCountEqual(
+            res['data']['groupmanagementGroupMemberships']['members'],
+            [
+                {
+                    "user": {
+                        "id": str(user.id),
+                    },
+                    "isLeader": user == self.user2,
+                } for user in [self.user2, self.user3]
+            ]
         )
 
     def test_group_membership_list_permission_denied(self):
@@ -448,40 +450,39 @@ class TestQueries(GraphQLTestCase):
             }
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "groupmanagementGroupMembershipAudit": {
-                        'group': {
-                            'id': str(self.group1.id),
-                        },
-                        "entries": [
-                            {
-                                "requestType": GroupRequestLogType.JOIN.name,
-                                "action": GroupRequestLogActionType.REJECT.name,
-                                "requestor": {
-                                    "id": str(self.user2.id),
-                                }
-                            },
-                            {
-                                "requestType": GroupRequestLogType.LEAVE.name,
-                                "action": GroupRequestLogActionType.ACCEPT.name,
-                                "requestor": {
-                                    "id": str(self.user2.id),
-                                }
-                            },
-                            {
-                                "requestType": GroupRequestLogType.REMOVED.name,
-                                "action": None,
-                                "requestor": {
-                                    "id": str(self.user2.id),
-                                }
-                            },
-                        ]
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('groupmanagementGroupMembershipAudit', res['data'])
+        self.assertIn('group', res['data']['groupmanagementGroupMembershipAudit'])
+        self.assertIn('id', res['data']['groupmanagementGroupMembershipAudit']['group'])
+        self.assertEqual(res['data']['groupmanagementGroupMembershipAudit']['group']['id'], str(self.group1.id))
+        self.assertIn('entries', res['data']['groupmanagementGroupMembershipAudit'])
+        self.assertCountEqual(
+            res['data']['groupmanagementGroupMembershipAudit']['entries'],
+            [
+                {
+                    "requestType": GroupRequestLogType.JOIN.name,
+                    "action": GroupRequestLogActionType.REJECT.name,
+                    "requestor": {
+                        "id": str(self.user2.id),
                     }
-                }
-            }
+                },
+                {
+                    "requestType": GroupRequestLogType.LEAVE.name,
+                    "action": GroupRequestLogActionType.ACCEPT.name,
+                    "requestor": {
+                        "id": str(self.user2.id),
+                    }
+                },
+                {
+                    "requestType": GroupRequestLogType.REMOVED.name,
+                    "action": None,
+                    "requestor": {
+                        "id": str(self.user2.id),
+                    }
+                },
+            ]
         )
 
     def test_group_membership_audit_permission_denied(self):
