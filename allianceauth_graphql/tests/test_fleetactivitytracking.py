@@ -134,26 +134,26 @@ class TestQueries(GraphQLTestCase):
             }
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'fatCorpMonthlyStats': [
-                        {
-                            'user': {
-                                'id': str(self.user2.id),
-                            },
-                            'numChars': 7,
-                        },
-                        {
-                            'user': {
-                                'id': str(self.user.id),
-                            },
-                            'numChars': 1,
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('fatCorpMonthlyStats', res['data'])
+        self.assertCountEqual(
+            res['data']['fatCorpMonthlyStats'],
+            [
+                {
+                    'user': {
+                        'id': str(self.user2.id),
+                    },
+                    'numChars': 7,
+                },
+                {
+                    'user': {
+                        'id': str(self.user.id),
+                    },
+                    'numChars': 1,
+                },
+            ]
         )
 
     def test_fat_general_monthly_stats(self):

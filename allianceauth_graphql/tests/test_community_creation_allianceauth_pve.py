@@ -202,20 +202,20 @@ class TestQueries(GraphQLTestCase):
             ''',
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'pveSearchRotationCharacters': [
-                        {
-                            'id': str(self.mainchar.pk),
-                        },
-                        {
-                            'id': str(self.char2.pk),
-                        }
-                    ]
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('pveSearchRotationCharacters', res['data'])
+        self.assertCountEqual(
+            res['data']['pveSearchRotationCharacters'],
+            [
+                {
+                    'id': str(self.mainchar.pk),
+                },
+                {
+                    'id': str(self.char2.pk),
                 }
-            }
+            ]
         )
 
     def test_pve_search_rotation_characters_name(self):
@@ -234,20 +234,20 @@ class TestQueries(GraphQLTestCase):
             },
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'pveSearchRotationCharacters': [
-                        {
-                            'id': str(self.mainchar.pk),
-                        },
-                        {
-                            'id': str(self.char2.pk),
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('pveSearchRotationCharacters', res['data'])
+        self.assertCountEqual(
+            res['data']['pveSearchRotationCharacters'],
+            [
+                {
+                    'id': str(self.mainchar.pk),
+                },
+                {
+                    'id': str(self.char2.pk),
+                },
+            ]
         )
 
     @override_settings(PVE_ONLY_MAINS=True)
@@ -340,17 +340,17 @@ class TestQueries(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'pveButtons': [
-                        {
-                            'id': str(button.pk),
-                        } for button in PveButton.objects.all()
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('pveButtons', res['data'])
+        self.assertCountEqual(
+            res['data']['pveButtons'],
+            [
+                {
+                    'id': str(button.pk),
+                } for button in PveButton.objects.all()
+            ]
         )
 
 

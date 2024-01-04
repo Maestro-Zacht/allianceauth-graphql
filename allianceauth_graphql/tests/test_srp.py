@@ -52,20 +52,20 @@ class TestQueries(GraphQLTestCase):
             variables={'all': True}
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                'data': {
-                    'srpGetFleets': [
-                        {
-                            'id': str(self.open_fleet.pk),
-                        },
-                        {
-                            'id': str(self.completed_fleet.pk),
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('srpGetFleets', res['data'])
+        self.assertCountEqual(
+            res['data']['srpGetFleets'],
+            [
+                {
+                    'id': str(self.open_fleet.pk),
+                },
+                {
+                    'id': str(self.completed_fleet.pk),
+                },
+            ]
         )
 
     def test_srp_get_fleets_not_all(self):

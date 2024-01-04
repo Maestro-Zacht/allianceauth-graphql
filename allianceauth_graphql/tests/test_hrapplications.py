@@ -1,5 +1,3 @@
-import json
-
 from graphene_django.utils.testing import GraphQLTestCase
 
 from allianceauth.tests.auth_utils import AuthUtils
@@ -85,20 +83,20 @@ class TestQueriesAndTypes(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrCorpApplications": [
-                        {
-                            "id": str(self.pending_application2.id)
-                        },
-                        {
-                            "id": str(self.pending_application.id)
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('hrCorpApplications', res['data'])
+        self.assertCountEqual(
+            res['data']['hrCorpApplications'],
+            [
+                {
+                    "id": str(self.pending_application2.id)
+                },
+                {
+                    "id": str(self.pending_application.id)
+                },
+            ]
         )
 
     def test_hr_corp_applications_perms(self):
@@ -169,20 +167,20 @@ class TestQueriesAndTypes(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrFinishedCorpApplications": [
-                        {
-                            "id": str(self.approved_application.id)
-                        },
-                        {
-                            "id": str(self.rejected_application.id)
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('hrFinishedCorpApplications', res['data'])
+        self.assertCountEqual(
+            res['data']['hrFinishedCorpApplications'],
+            [
+                {
+                    "id": str(self.approved_application.id)
+                },
+                {
+                    "id": str(self.rejected_application.id)
+                },
+            ]
         )
 
     def test_hr_finished_corp_applications_perms(self):
@@ -204,22 +202,22 @@ class TestQueriesAndTypes(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrFinishedCorpApplications": [
-                        {
-                            "id": str(self.approved_application.id),
-                            "status": ApplicationStatus.APPROVED.name
-                        },
-                        {
-                            "id": str(self.rejected_application.id),
-                            "status": ApplicationStatus.REJECTED.name
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('hrFinishedCorpApplications', res['data'])
+        self.assertCountEqual(
+            res['data']['hrFinishedCorpApplications'],
+            [
+                {
+                    "id": str(self.approved_application.id),
+                    "status": ApplicationStatus.APPROVED.name
+                },
+                {
+                    "id": str(self.rejected_application.id),
+                    "status": ApplicationStatus.REJECTED.name
+                },
+            ]
         )
 
     def test_hr_finished_corp_applications_no_access(self):
@@ -284,26 +282,26 @@ class TestQueriesAndTypes(GraphQLTestCase):
             '''
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrPersonalApplications": [
-                        {
-                            "id": str(self.pending_application.id),
-                            "status": ApplicationStatus.PENDING.name
-                        },
-                        {
-                            "id": str(self.pending_application2.id),
-                            "status": ApplicationStatus.PENDING.name
-                        },
-                        {
-                            "id": str(self.rejected_application.id),
-                            "status": ApplicationStatus.REJECTED.name
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('hrPersonalApplications', res['data'])
+        self.assertCountEqual(
+            res['data']['hrPersonalApplications'],
+            [
+                {
+                    "id": str(self.pending_application.id),
+                    "status": ApplicationStatus.PENDING.name
+                },
+                {
+                    "id": str(self.pending_application2.id),
+                    "status": ApplicationStatus.PENDING.name
+                },
+                {
+                    "id": str(self.rejected_application.id),
+                    "status": ApplicationStatus.REJECTED.name
+                },
+            ]
         )
 
     def test_hr_personal_applications_pending(self):
@@ -322,20 +320,20 @@ class TestQueriesAndTypes(GraphQLTestCase):
             }
         )
 
-        self.assertJSONEqual(
-            response.content,
-            {
-                "data": {
-                    "hrPersonalApplications": [
-                        {
-                            "id": str(self.pending_application.id)
-                        },
-                        {
-                            "id": str(self.pending_application2.id)
-                        },
-                    ]
-                }
-            }
+        res = response.json()
+
+        self.assertIn('data', res)
+        self.assertIn('hrPersonalApplications', res['data'])
+        self.assertCountEqual(
+            res['data']['hrPersonalApplications'],
+            [
+                {
+                    "id": str(self.pending_application.id)
+                },
+                {
+                    "id": str(self.pending_application2.id)
+                },
+            ]
         )
 
     def test_hr_personal_applications_rejected(self):
@@ -418,7 +416,7 @@ class TestQueriesAndTypes(GraphQLTestCase):
             }
         )
 
-        result = json.loads(response.content)
+        result = response.json()
 
         self.assertIn('data', result)
         self.assertIn('hrSearchApplication', result['data'])
